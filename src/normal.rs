@@ -172,7 +172,7 @@ where
         )
         .into_boxed_slice();
 
-        for i in 0..data.len() / 2 {
+        for i in (0..data.len() / 2).rev() {
             data[i] = <QueryProvider as Query<T>>::combine(&data[i * 2], &data[i * 2 + 1])
         }
 
