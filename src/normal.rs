@@ -135,7 +135,7 @@ where
             <QueryProvider as Query<T>>::identity(),
         );
         while {
-            if l > r {
+            if l >= r {
                 acc_l = <QueryProvider as Query<T>>::combine(&acc_l, &self.data[l]);
                 l += 1;
                 l >>= l.trailing_zeros()
@@ -225,24 +225,38 @@ where
 }
 
 #[cfg(test)]
-mod tests {
+mod test_point_update {}
+
+#[cfg(test)]
+mod test_range_query {
+    use rand::Rng;
+
     use crate::{normal::SegmentTree, provider::AddProvider};
 
-    #[test]
-    fn test_point_update() {}
-
-    #[test]
-    fn test_range_query() {
-        const MAX: usize = 1_000;
-
-        let point_add_range_sum = SegmentTree::<_, _, AddProvider, AddProvider>::from_iter(0..MAX);
-        for i in 0..MAX {
-            for j in i + 1..MAX {
+    fn template(n: usize) {
+        let point_add_range_sum: _ = SegmentTree::<_, _, AddProvider, AddProvider>::from_iter(0..n);
+        for i in 0..n {
+            for j in i + 1..n {
                 assert_eq!(
                     point_add_range_sum.range_query(i..j),
                     (i + j - 1) * (j - i) / 2
                 )
             }
+        }
+    }
+
+    #[test]
+    fn pow2() {
+        for i in 0..5 {
+            template(1 << i);
+        }
+    }
+
+    #[test]
+    fn random() {
+        let mut rng = rand::rng();
+        for _ in 0..5 {
+            template(rng.random_range(100..1_000));
         }
     }
 }
