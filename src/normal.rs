@@ -83,6 +83,10 @@ where
     /// # Example
     ///
     /// ```
+    /// use seg_lib::{
+    ///     normal::SegmentTree,
+    ///     provider::{AddProvider, }
+    /// };
     /// ```
     ///
     /// # Time complexity
@@ -168,7 +172,7 @@ where
         )
         .into_boxed_slice();
 
-        for i in data.len() / 2..data.len() {
+        for i in 0..data.len() / 2 {
             data[i] = <QueryProvider as Query<T>>::combine(&data[i * 2], &data[i * 2 + 1])
         }
 
