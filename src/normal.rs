@@ -172,7 +172,7 @@ where
         )
         .into_boxed_slice();
 
-        for i in (0..data.len() / 2).rev() {
+        for i in (1..data.len() / 2).rev() {
             data[i] = <QueryProvider as Query<T>>::combine(&data[i * 2], &data[i * 2 + 1])
         }
 
@@ -208,7 +208,7 @@ where
             )
             .into_boxed_slice();
 
-            for i in data.len() / 2..data.len() {
+            for i in (1..min).rev() {
                 data[i] = <QueryProvider as Query<T>>::combine(&data[i * 2], &data[i * 2 + 1])
             }
 
@@ -220,6 +220,29 @@ where
             }
         } else {
             Self::from(Vec::from_iter(iter))
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{normal::SegmentTree, provider::AddProvider};
+
+    #[test]
+    fn test_point_update() {}
+
+    #[test]
+    fn test_range_query() {
+        const MAX: usize = 1_000;
+
+        let point_add_range_sum = SegmentTree::<_, _, AddProvider, AddProvider>::from_iter(0..MAX);
+        for i in 0..MAX {
+            for j in i + 1..MAX {
+                assert_eq!(
+                    point_add_range_sum.range_query(i..j),
+                    (i + j - 1) * (j - i) / 2
+                )
+            }
         }
     }
 }
