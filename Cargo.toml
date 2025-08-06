@@ -8,3 +8,4 @@ num-traits = "0.2.19"
 
 [dev-dependencies]
 proconio = { version = "0.5.0", features = ["derive"] }
+rand = "0.9.2"
