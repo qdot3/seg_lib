@@ -1,13 +1,13 @@
 use crate::traits::Update;
 
 #[derive(Debug)]
-pub struct AssignProvider;
+pub struct Assign;
 
-impl<T> Update<Option<T>> for AssignProvider
+impl<T> Update<Option<T>> for Assign
 where
     T: Clone,
 {
-    type Arg = T;
+    type Set = T;
 
     fn identity() -> Option<T> {
         None
@@ -17,7 +17,7 @@ where
         new.clone()
     }
 
-    fn update(op: &Option<T>, arg: &Self::Arg) -> Self::Arg {
+    fn update(op: &Option<T>, arg: &Self::Set) -> Self::Set {
         match op {
             Some(value) => value.clone(),
             None => arg.clone(),

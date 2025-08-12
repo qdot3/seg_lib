@@ -1,16 +1,24 @@
 /// Defines query on segment tree variants.
 pub trait Query<T> {
+    /// Returns identity element.
     fn identity() -> T;
+
+    /// Combines two given elements.
     fn combine(lhs: &T, rhs: &T) -> T;
 }
 
 /// Defines update query on segment tree variants.
-pub trait Update<T> {
-    type Arg;
+pub trait Update<M> {
+    type Set;
 
-    fn identity() -> T;
-    fn combine(previous: &T, new: &T) -> T;
-    fn update(op: &T, arg: &Self::Arg) -> Self::Arg;
+    /// Returns identity mapping.
+    fn identity() -> M;
+
+    /// Composes given two mappings in chronological order.
+    fn combine(prev: &M, next: &M) -> M;
+
+    /// Lets a given `mapping` act on a given `element` and returns the result.
+    fn update(mapping: &M, element: &Self::Set) -> Self::Set;
 }
 
 impl<P1, P2, T1, T2> Query<(T1, T2)> for (P1, P2)

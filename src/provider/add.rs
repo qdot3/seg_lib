@@ -1,42 +1,44 @@
-use num_traits::Zero;
-
-use std::ops::Add;
-
 use crate::traits::{Query, Update};
 
 #[derive(Debug)]
-pub struct AddProvider;
+pub struct Add;
 
-impl<T> Query<T> for AddProvider
-where
-    T: Zero,
-    for<'a> &'a T: Add<&'a T, Output = T>,
-{
-    fn identity() -> T {
-        T::zero()
-    }
+macro_rules! impl_query {
+    ($( $t:ty )*) => {$(
+        impl Query<$t> for Add {
+            fn identity() -> $t {
+                const ZERO: $t = 0 as $t;
+                ZERO
+            }
 
-    fn combine(lhs: &T, rhs: &T) -> T {
-        lhs.add(rhs)
-    }
+            fn combine(lhs: &$t, rhs: &$t) -> $t {
+                lhs + rhs
+            }
+        }
+    )*};
 }
 
-impl<T> Update<T> for AddProvider
-where
-    T: Zero,
-    for<'a> &'a T: Add<&'a T, Output = T>,
-{
-    type Arg = T;
+impl_query!( u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize f32 f64 );
 
-    fn identity() -> T {
-        T::zero()
-    }
+macro_rules! impl_update {
+    ($( $t:ty )*) => {$(
+        impl Update<$t> for Add {
+            type Set = $t;
 
-    fn combine(previous: &T, new: &T) -> T {
-        previous.add(new)
-    }
+            fn identity() -> $t {
+                const ZERO: $t = 0 as $t;
+                ZERO
+            }
 
-    fn update(op: &T, arg: &Self::Arg) -> Self::Arg {
-        op.add(arg)
-    }
+            fn combine(prev: &$t, next: &$t) -> $t {
+                prev + next
+            }
+
+            fn update(mapping: &$t, element: &Self::Set) -> Self::Set {
+                mapping + element
+            }
+        }
+    )*};
 }
+
+impl_update!( u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize f32 f64 );

@@ -7,7 +7,7 @@ pub struct AssignOrProvider;
 
 pub enum AssignOr<T, U, UpdateProvider>
 where
-    UpdateProvider: Update<U, Arg = T>,
+    UpdateProvider: Update<U, Set = T>,
 {
     Assign(T),
     Or(U, PhantomData<UpdateProvider>),
@@ -16,9 +16,9 @@ where
 impl<T, U, UpdateProvider> Update<AssignOr<T, U, UpdateProvider>> for AssignOrProvider
 where
     T: Clone,
-    UpdateProvider: Update<U, Arg = T>,
+    UpdateProvider: Update<U, Set = T>,
 {
-    type Arg = T;
+    type Set = T;
 
     fn identity() -> AssignOr<T, U, UpdateProvider> {
         AssignOr::Or(<UpdateProvider as Update<U>>::identity(), PhantomData)
@@ -40,7 +40,7 @@ where
         }
     }
 
-    fn update(op: &AssignOr<T, U, UpdateProvider>, arg: &Self::Arg) -> Self::Arg {
+    fn update(op: &AssignOr<T, U, UpdateProvider>, arg: &Self::Set) -> Self::Set {
         match op {
             AssignOr::Assign(new) => new.clone(),
             AssignOr::Or(op, _) => <UpdateProvider as Update<U>>::update(op, arg),

@@ -10,7 +10,7 @@ pub struct SegmentTree<T, U, QueryProvider, UpdateProvider>
 where
     T: Clone, // used in `range_query()` because it is NOT allowed to return a reference to a temporary value.
     QueryProvider: Query<T>,
-    UpdateProvider: Update<U, Arg = T>,
+    UpdateProvider: Update<U, Set = T>,
 {
     /// Use `Box<T>` because the length is significant as follows.
     ///
@@ -27,16 +27,16 @@ impl<T, U, QueryProvider, UpdateProvider> SegmentTree<T, U, QueryProvider, Updat
 where
     T: Clone,
     QueryProvider: Query<T>,
-    UpdateProvider: Update<U, Arg = T>,
+    UpdateProvider: Update<U, Set = T>,
 {
     /// Creates a [`SegmentTree`] initialized with `n` [`Query::identity`].
     ///
     /// # Example
     ///
     /// ```
-    /// use seg_lib::{normal::SegmentTree, provider::AddProvider};
+    /// use seg_lib::{normal::SegmentTree, provider::Add};
     ///
-    /// let mut point_add_range_sum = SegmentTree::<u32, _, AddProvider, AddProvider>::new(10_000);
+    /// let mut point_add_range_sum = SegmentTree::<u32, _, Add, Add>::new(10_000);
     /// ```
     ///
     /// # Time complexity
@@ -85,7 +85,7 @@ where
     /// ```
     /// use seg_lib::{
     ///     normal::SegmentTree,
-    ///     provider::{AddProvider, }
+    ///     provider::{Add, }
     /// };
     /// ```
     ///
@@ -157,7 +157,7 @@ impl<T, U, QueryProvider, UpdateProvider> From<Vec<T>>
 where
     T: Clone,
     QueryProvider: Query<T>,
-    UpdateProvider: Update<U, Arg = T>,
+    UpdateProvider: Update<U, Set = T>,
 {
     /// Converts a [`Vec<T>`] into a [`SegmentTree<T, _, _, _>`].
     ///
@@ -190,7 +190,7 @@ impl<T, U, QueryProvider, UpdateProvider> FromIterator<T>
 where
     T: Clone,
     QueryProvider: Query<T>,
-    UpdateProvider: Update<U, Arg = T>,
+    UpdateProvider: Update<U, Set = T>,
 {
     /// Creates a [`SegmentTree<T, _, _, _>`] from an iterator.
     ///
@@ -225,16 +225,13 @@ where
 }
 
 #[cfg(test)]
-mod test_point_update {}
-
-#[cfg(test)]
 mod test_range_query {
     use rand::Rng;
 
-    use crate::{normal::SegmentTree, provider::AddProvider};
+    use crate::{normal::SegmentTree, provider::Add};
 
     fn template(n: usize) {
-        let point_add_range_sum: _ = SegmentTree::<_, _, AddProvider, AddProvider>::from_iter(0..n);
+        let point_add_range_sum: _ = SegmentTree::<_, usize, Add, Add>::from_iter(0..n);
         for i in 0..n {
             for j in i + 1..n {
                 assert_eq!(
@@ -247,7 +244,7 @@ mod test_range_query {
 
     #[test]
     fn pow2() {
-        for i in 0..5 {
+        for i in 0..10 {
             template(1 << i);
         }
     }
@@ -255,8 +252,8 @@ mod test_range_query {
     #[test]
     fn random() {
         let mut rng = rand::rng();
-        for _ in 0..5 {
-            template(rng.random_range(100..1_000));
+        for _ in 0..10 {
+            template(rng.random_range(100..5_000));
         }
     }
 }
