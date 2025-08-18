@@ -156,7 +156,6 @@ where
 impl<T, U, QueryProvider, UpdateProvider> From<Vec<T>>
     for SegmentTree<T, U, QueryProvider, UpdateProvider>
 where
-    T: Clone,
     QueryProvider: Query<T>,
     UpdateProvider: Update<U, Set = T>,
 {
@@ -189,7 +188,6 @@ where
 impl<T, U, QueryProvider, UpdateProvider> FromIterator<T>
     for SegmentTree<T, U, QueryProvider, UpdateProvider>
 where
-    T: Clone,
     QueryProvider: Query<T>,
     UpdateProvider: Update<U, Set = T>,
 {
