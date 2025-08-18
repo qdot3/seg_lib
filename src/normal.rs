@@ -8,7 +8,6 @@ use crate::traits::{Query, Update};
 #[derive(Debug, Clone)]
 pub struct SegmentTree<T, U, QueryProvider, UpdateProvider>
 where
-    T: Clone, // used in `range_query()` because it is NOT allowed to return a reference to a temporary value.
     QueryProvider: Query<T>,
     UpdateProvider: Update<U, Set = T>,
 {
@@ -25,7 +24,6 @@ where
 
 impl<T, U, QueryProvider, UpdateProvider> SegmentTree<T, U, QueryProvider, UpdateProvider>
 where
-    T: Clone,
     QueryProvider: Query<T>,
     UpdateProvider: Update<U, Set = T>,
 {
@@ -125,7 +123,10 @@ where
         let [mut l, mut r] = self.inner_range(range);
         // <=> l + 1 == r because l < r except when overflow occurs
         if l ^ r == 1 {
-            return self.data[l].clone();
+            return <QueryProvider as Query<T>>::combine(
+                &<QueryProvider as Query<T>>::identity(),
+                &self.data[l],
+            );
         }
 
         l >>= l.trailing_zeros();
