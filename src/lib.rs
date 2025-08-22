@@ -1,6 +1,35 @@
-pub mod normal;
-pub mod dual;
+//! `seg_lib` is
 
+pub mod dual;
+pub mod normal;
+
+/// Predefined operations on segment tree variants.
+///
+/// # Custom provider
+///
+/// ```no_run
+/// pub struct Custom<T>(PhantomData<T>);
+///
+/// impl<T> Monoid for Custom<T> { /* ---- */ }
+/// impl<M, S> MonoidAction for Custom<(M, S)> { /* ---- */ }
+/// ```
+///
+/// # TODO
+///
+/// If `negative_trait_impl` is stabilized, rewrite trait bounds as follows:
+///
+/// ```no_run
+/// impl Monoid for Add<T>
+/// where
+///     T: !Copy
+///     for<'a> &'a T: std::ops::Add<Output =T>
+/// { /* methods */ }
+///
+/// impl Monoid for Add<T>
+/// where
+///     T: Copy + std::ops::Add<Output = T>
+/// { /* methods */ }
+/// ```
 pub mod provider {
     mod add;
     pub use add::Add;
@@ -9,16 +38,15 @@ pub mod provider {
     pub use max::Max;
 
     mod min;
+    pub use min::Min;
 
     mod assign;
     pub use assign::Assign;
 
-    mod assign_or;
-    pub use assign_or::{AssignOr, AssignOrProvider};
-
     mod affine;
     pub use affine::Affine;
 
+    /// will be removed
     pub mod legacy;
 }
 

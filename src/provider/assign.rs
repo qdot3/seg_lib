@@ -1,26 +1,24 @@
-use crate::traits::Update;
+use std::marker::PhantomData;
 
-#[derive(Debug)]
-pub struct Assign;
+use crate::traits::Monoid;
 
-impl<T> Update<Option<T>> for Assign
+/// Represents `=` operation.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Assign<T>(PhantomData<T>);
+
+impl<T> Monoid for Assign<T>
 where
     T: Clone,
 {
-    type Set = T;
+    type Set = Option<T>;
 
-    fn identity() -> Option<T> {
+    const IS_COMMUTATIVE: bool = false;
+
+    fn identity() -> Self::Set {
         None
     }
 
-    fn combine(_previous: &Option<T>, new: &Option<T>) -> Option<T> {
-        new.clone()
-    }
-
-    fn update(op: &Option<T>, arg: &Self::Set) -> Self::Set {
-        match op {
-            Some(value) => value.clone(),
-            None => arg.clone(),
-        }
+    fn combine(lhs: &Self::Set, _: &Self::Set) -> Self::Set {
+        lhs.clone()
     }
 }

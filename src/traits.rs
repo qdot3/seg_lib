@@ -74,6 +74,8 @@ pub trait Monoid {
     fn combine(lhs: &Self::Set, rhs: &Self::Set) -> Self::Set;
 }
 
+/// A **monoid action** is a function `*: Map x Set -> Set` of `Map` on `Set`.
+///
 /// # Lows
 ///
 /// ```text
@@ -87,7 +89,25 @@ pub trait MonoidAction {
     type Map;
     type Set;
 
+    /// If [`Self::combine`] is commutative, some operations can be optimized.
+    ///
+    /// If unsure about the commutativity, use [`false`] for safety.
+    ///
+    /// # Commutative low
+    ///
+    /// ```text
+    /// f · g = g · f    ∀ f, g ∈ Map
+    /// ```
+    const IS_COMMUTATIVE: bool;
+
+    /// Returns the identity mapping.
     fn identity() -> Self::Map;
+
+    /// Combines the two maps and returns the result.
+    ///
+    /// If the operation is **not** commutative, be careful of the order of elements.
     fn combine(lhs: &Self::Map, rhs: &Self::Map) -> Self::Map;
-    fn apply(map: &Self::Map, value: &Self::Set) -> Self::Set;
+
+    /// Applies the mapping on the element and returns the result.
+    fn apply(mapping: &Self::Map, element: &Self::Set) -> Self::Set;
 }

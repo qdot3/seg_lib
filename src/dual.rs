@@ -1,4 +1,4 @@
-use std::{fmt::Debug, ops::RangeBounds};
+use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 
 use crate::traits::Monoid;
 
@@ -8,6 +8,8 @@ where
     Update: Monoid,
 {
     data: Box<[<Update as Monoid>::Set]>,
+    /// for Debug
+    update: PhantomData<Update>,
 }
 
 impl<Update> DualSegmentTree<Update>
@@ -20,7 +22,10 @@ where
             Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(n << 1))
                 .into_boxed_slice();
 
-        Self { data }
+        Self {
+            data,
+            update: PhantomData,
+        }
     }
 
     #[inline]
@@ -168,7 +173,10 @@ where
         )
         .into_boxed_slice();
 
-        Self { data }
+        Self {
+            data,
+            update: PhantomData,
+        }
     }
 }
 
@@ -187,7 +195,10 @@ where
             )
             .into_boxed_slice();
 
-            Self { data }
+            Self {
+                data,
+                update: PhantomData,
+            }
         } else {
             Vec::from_iter(iter).into()
         }
@@ -202,6 +213,7 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DualSegmentTree")
             .field("data", &self.data)
+            .field("update", &self.update)
             .finish()
     }
 }
@@ -214,6 +226,7 @@ where
     fn clone(&self) -> Self {
         Self {
             data: self.data.clone(),
+            update: PhantomData,
         }
     }
 }
