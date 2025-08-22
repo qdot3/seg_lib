@@ -1,13 +1,15 @@
 // verification-helper: PROBLEM https://judge.yosupo.jp/problem/range_affine_point_get
 
 use proconio::{fastout, input};
-use seg_lib::{dual::DualSegmentTree, provider::Affine};
+use seg_lib::{dual::DualSegmentTree, traits::Monoid};
+
+const MOD: u64 = 998_244_353;
 
 #[fastout]
 fn main() {
     input! { n: usize, q: usize, a: [u64; n], }
 
-    let mut dst = DualSegmentTree::<Affine<u64>>::new(n);
+    let mut dst = DualSegmentTree::<ModAffine<MOD>>::new(n);
 
     for _ in 0..q {
         input! { flag: u8, }
@@ -20,12 +22,25 @@ fn main() {
             input! { i: usize, }
 
             let [tilt, offset] = dst.point_query(i);
-            println!("{}", tilt * a[i] + offset);
+            println!("{}", (tilt * a[i] + offset) % MOD);
         } else {
             unreachable!()
         }
+    }
+}
 
-        #[cfg(debug_assertions)]
-        eprintln!("{:?}", dst)
+struct ModAffine<const MOD: u64>;
+
+impl<const MOD: u64> Monoid for ModAffine<MOD> {
+    type Set = [u64; 2];
+
+    const IS_COMMUTATIVE: bool = false;
+
+    fn identity() -> Self::Set {
+        [1, 0]
+    }
+
+    fn combine(lhs: &Self::Set, rhs: &Self::Set) -> Self::Set {
+        [lhs[0] * rhs[0] % MOD, (lhs[0] * rhs[1] + lhs[1]) % MOD]
     }
 }
