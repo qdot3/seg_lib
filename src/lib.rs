@@ -1,4 +1,5 @@
 pub mod normal;
+pub mod dual;
 
 pub mod provider {
     mod add;
@@ -17,6 +18,8 @@ pub mod provider {
 
     mod affine;
     pub use affine::Affine;
+
+    pub mod legacy;
 }
 
 pub mod traits;

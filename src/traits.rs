@@ -37,3 +37,57 @@ where
         )
     }
 }
+
+/// A **monoid** is a set equipped with:
+///
+/// - An associative binary operation
+/// - An identity element
+///
+/// # Lows
+///
+/// ```text
+/// (1) a · (b · c) = (a · b) · c    ∀ a, b, c ∈ Set
+/// (2) a · e = e · a = a            ∀ a ∈ Set, ∃ e ∈ Set
+/// ```
+///
+/// where `·` is the binary operation and `e` is the identity element.
+pub trait Monoid {
+    type Set;
+
+    /// If [`Self::combine`] is commutative, some operations can be optimized.
+    ///
+    /// If unsure about the commutativity, use [`false`] for safety.
+    ///
+    /// # Commutative low
+    ///
+    /// ```text
+    /// a · b = b · a    ∀ a, b ∈ Set
+    /// ```
+    const IS_COMMUTATIVE: bool;
+
+    /// Returns the identity element.
+    fn identity() -> Self::Set;
+
+    /// Combines the two elements and returns the result.
+    ///
+    /// If the operation is **not** commutative, be careful of the order of elements.
+    fn combine(lhs: &Self::Set, rhs: &Self::Set) -> Self::Set;
+}
+
+/// # Lows
+///
+/// ```text
+/// (1) (Map, ·, e) is a monoid
+/// (2) (f · g) * a = f * (g * a)    ∀ f, g ∈ Map, ∀ a ∈ Set
+/// (3) e * a = a                    ∃   e  ∈ Map, ∀ a ∈ Set
+/// ```
+///
+/// See [Monoid] for reference.
+pub trait MonoidAction {
+    type Map;
+    type Set;
+
+    fn identity() -> Self::Map;
+    fn combine(lhs: &Self::Map, rhs: &Self::Map) -> Self::Map;
+    fn apply(map: &Self::Map, value: &Self::Set) -> Self::Set;
+}

@@ -1,7 +1,7 @@
 // verification-helper: PROBLEM https://judge.yosupo.jp/problem/point_add_range_sum
 
 use proconio::{fastout, input};
-use seg_lib::{normal::SegmentTree, provider::Add};
+use seg_lib::{normal::SegmentTree, provider::legacy::Add};
 
 #[fastout]
 fn main() {

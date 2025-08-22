@@ -1,48 +1,26 @@
-use std::{
-    marker::PhantomData,
-    ops::{Add, Mul},
-};
+use std::marker::PhantomData;
 
 use num_traits::{One, Zero};
 
-use crate::traits::{Query, Update};
+use crate::traits::Monoid;
 
 #[derive(Debug)]
 pub struct Affine<T>(PhantomData<T>);
 
-impl<T> Query<(T, T)> for Affine<T>
+impl<T> Monoid for Affine<T>
 where
     T: One + Zero,
-    for<'a> &'a T: Mul<&'a T, Output = T>,
-    for<'a> T: Add<&'a T, Output = T>,
+    for<'a> &'a T: std::ops::Add<Output = T> + std::ops::Mul<Output = T>,
 {
-    fn identity() -> (T, T) {
-        (T::one(), T::zero())
+    type Set = [T; 2];
+
+    const IS_COMMUTATIVE: bool = false;
+
+    fn identity() -> Self::Set {
+        [T::one(), T::zero()]
     }
 
-    fn combine(lhs: &(T, T), rhs: &(T, T)) -> (T, T) {
-        // R @ L = (ax + b) @ (cx + d) = a(cx + d) + b = (ac)x + (ad + b)
-        (&rhs.0 * &lhs.0, &rhs.0 * &lhs.1 + &rhs.1)
-    }
-}
-
-impl<T> Update<(T, T)> for Affine<T>
-where
-    T: One + Zero,
-    for<'a> &'a T: Mul<&'a T, Output = T>,
-    for<'a> T: Add<&'a T, Output = T>,
-{
-    type Set = T;
-
-    fn identity() -> (T, T) {
-        <Self as Query<(T, T)>>::identity()
-    }
-
-    fn combine(previous: &(T, T), new: &(T, T)) -> (T, T) {
-        <Self as Query<(T, T)>>::combine(previous, new)
-    }
-
-    fn update(op: &(T, T), arg: &Self::Set) -> Self::Set {
-        &op.0 * arg + &op.1
+    fn combine(lhs: &Self::Set, rhs: &Self::Set) -> Self::Set {
+        [&lhs[0] * &rhs[0], &(&lhs[0] * &rhs[1]) + &lhs[1]]
     }
 }

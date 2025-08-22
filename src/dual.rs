@@ -1,0 +1,258 @@
+use std::{fmt::Debug, ops::RangeBounds};
+
+use crate::traits::Monoid;
+
+/// A data structure which supports *range update point query* operation.
+pub struct DualSegmentTree<Update>
+where
+    Update: Monoid,
+{
+    data: Box<[<Update as Monoid>::Set]>,
+}
+
+impl<Update> DualSegmentTree<Update>
+where
+    Update: Monoid,
+{
+    /// Creates a new instance initialized with `n` [`Monoid::identity`]s.
+    pub fn new(n: usize) -> Self {
+        let data =
+            Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(n << 1))
+                .into_boxed_slice();
+
+        Self { data }
+    }
+
+    #[inline]
+    fn inner_index(&self, i: usize) -> usize {
+        self.data.len() / 2 + i
+    }
+
+    /// Returns `[l, r)` on `self.data`.
+    #[inline]
+    fn inner_range<R>(&self, range: R) -> [usize; 2]
+    where
+        R: RangeBounds<usize>,
+    {
+        let l = match range.start_bound() {
+            std::ops::Bound::Included(l) => *l,
+            std::ops::Bound::Excluded(l) => l + 1,
+            std::ops::Bound::Unbounded => 0,
+        };
+        let r = match range.end_bound() {
+            std::ops::Bound::Included(r) => r + 1,
+            std::ops::Bound::Excluded(r) => *r,
+            std::ops::Bound::Unbounded => self.data.len() / 2,
+        };
+
+        [self.inner_index(l), self.inner_index(r)]
+    }
+
+    /// Performs pending [`Monoid::combine`] operations for `i`-th node.
+    ///
+    /// # Panics
+    ///
+    /// Panics if either of children does **not** exist.
+    fn propagate(&mut self, i: usize) {
+        assert!(
+            self.data.len() >= (i << 1) + 2,
+            "{i}-th node should have two children",
+        );
+
+        let lazy = std::mem::replace(&mut self.data[i], <Update as Monoid>::identity());
+        self.data[i << 1] = <Update as Monoid>::combine(&lazy, &self.data[i << 1]);
+        self.data[(i << 1) | 1] = <Update as Monoid>::combine(&lazy, &self.data[(i << 1) | 1]);
+
+        // let children = &mut self.data[i << 1..(i << 1) + 2];
+        // children[0] = <Update as Monoid>::combine(&lazy, &children[0]);
+        // children[1] = <Update as Monoid>::combine(&lazy, &children[1]);
+    }
+
+    /// Returns `i`-th element combined in chronological order.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    pub fn point_query(&self, i: usize) -> <Update as Monoid>::Set {
+        let mut i = self.inner_index(i);
+        let mut res = <Update as Monoid>::identity();
+        // combine in chronological order
+        while i > 0 {
+            res = <Update as Monoid>::combine(&self.data[i], &res);
+            i >>= 1;
+        }
+
+        res
+    }
+
+    /// Updates `i`-th element using [`Monoid::combine`].
+    /// More precisely, `a[i] <- update · a[i]`
+    ///
+    /// # Time complexity
+    ///
+    /// | [`Monoid::IS_COMMUTATIVE`] | time         |
+    /// |----------------------------|--------------|
+    /// | [`true`]                   | *O*(1)       |
+    /// | [`false`]                  | *O*(log *N*) |
+    pub fn point_update(&mut self, i: usize, update: &<Update as Monoid>::Set) {
+        let i = self.inner_index(i);
+
+        // lazy propagation in top-to-bottom order
+        if !<Update as Monoid>::IS_COMMUTATIVE {
+            for d in (1..usize::BITS - i.leading_zeros()).rev() {
+                self.propagate(i >> d);
+            }
+        }
+
+        self.data[i] = <Update as Monoid>::combine(update, &self.data[i]);
+    }
+
+    /// Updates elements in the range using [`Monoid::combine()`].
+    /// More precisely, `a[i] <- update · a[i], i ∈ range`
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    pub fn range_update<R>(&mut self, range: R, update: &<Update as Monoid>::Set)
+    where
+        R: RangeBounds<usize>,
+    {
+        let [l, r] = self.inner_range(range);
+
+        if l >= r {
+            return;
+        }
+        // // l + 1 == r
+        // if l ^ r == 1 {
+        //     self.point_update(l, update);
+        //     return;
+        // }
+
+        let [l, r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
+        // lazy propagation in top-to-bottom order
+        if !<Update as Monoid>::IS_COMMUTATIVE {
+            for d in (1..usize::BITS - l.leading_zeros()).rev() {
+                self.propagate(l >> d);
+            }
+            for d in (1..usize::BITS - r.leading_zeros()).rev() {
+                self.propagate(r >> d);
+            }
+        }
+
+        let [mut l, mut r] = [l, r];
+        while {
+            if l >= r {
+                self.data[l] = <Update as Monoid>::combine(update, &self.data[l]);
+                l += 1;
+                l >>= l.trailing_zeros();
+            } else {
+                r -= 1;
+                self.data[r] = <Update as Monoid>::combine(update, &self.data[r]);
+                r >>= r.trailing_zeros()
+            }
+
+            l != r
+        } {}
+    }
+}
+
+impl<Update> From<Vec<<Update as Monoid>::Set>> for DualSegmentTree<Update>
+where
+    Update: Monoid,
+{
+    fn from(values: Vec<<Update as Monoid>::Set>) -> Self {
+        let data = Vec::from_iter(
+            std::iter::repeat_with(<Update as Monoid>::identity)
+                .take(values.len())
+                .chain(values),
+        )
+        .into_boxed_slice();
+
+        Self { data }
+    }
+}
+
+impl<Update> FromIterator<<Update as Monoid>::Set> for DualSegmentTree<Update>
+where
+    Update: Monoid,
+{
+    fn from_iter<I: IntoIterator<Item = <Update as Monoid>::Set>>(iter: I) -> Self {
+        let iter = iter.into_iter();
+        let (min, max) = iter.size_hint();
+        if Some(min) == max {
+            let data = Vec::from_iter(
+                std::iter::repeat_with(<Update as Monoid>::identity)
+                    .take(min)
+                    .chain(iter),
+            )
+            .into_boxed_slice();
+
+            Self { data }
+        } else {
+            Vec::from_iter(iter).into()
+        }
+    }
+}
+
+impl<Update> Debug for DualSegmentTree<Update>
+where
+    Update: Monoid,
+    <Update as Monoid>::Set: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DualSegmentTree")
+            .field("data", &self.data)
+            .finish()
+    }
+}
+
+impl<Update> Clone for DualSegmentTree<Update>
+where
+    Update: Monoid,
+    <Update as Monoid>::Set: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            data: self.data.clone(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod range_update {
+    use rand::Rng;
+
+    use crate::{dual::DualSegmentTree, provider::Add};
+
+    fn template(n: usize) {
+        let mut dual = DualSegmentTree::<Add<usize>>::new(n);
+
+        for l in 0..n {
+            for r in 0..n {
+                dual.range_update(l..=r, &1);
+            }
+        }
+
+        for i in 0..n {
+            let result = dual.point_query(i);
+            let expected = (i + 1) * (n - i);
+            assert_eq!(result, expected, "panics when n = {n}, i = {i}, {dual:?}",);
+        }
+    }
+
+    #[test]
+    fn test_pow_2() {
+        for d in 0..5 {
+            template(1 << d);
+        }
+    }
+
+    #[test]
+    fn test_random() {
+        let mut rng = rand::rng();
+        for _ in 0..10 {
+            let n = rng.random_range(100..5_000);
+            template(n);
+        }
+    }
+}

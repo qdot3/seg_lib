@@ -27,7 +27,7 @@ where
     QueryProvider: Query<T>,
     UpdateProvider: Update<U, Set = T>,
 {
-    /// Creates a [`SegmentTree`] initialized with `n` [`Query::identity`].
+    /// Creates an instance initialized with `n` [`Query::identity`].
     ///
     /// # Example
     ///
@@ -100,7 +100,7 @@ where
         }
     }
 
-    /// Returns a shared reference ot i-th data.
+    /// Returns a shared reference of i-th data.
     ///
     /// # Time complexity
     ///
@@ -121,7 +121,7 @@ where
         }
 
         let [mut l, mut r] = self.inner_range(range);
-        // <=> l + 1 == r because l < r except when overflow occurs
+        // l + 1 == r because l < r except when overflow occurs
         if l ^ r == 1 {
             return <QueryProvider as Query<T>>::combine(
                 &<QueryProvider as Query<T>>::identity(),
@@ -227,7 +227,7 @@ where
 mod test_range_query {
     use rand::Rng;
 
-    use crate::{normal::SegmentTree, provider::Add};
+    use crate::{normal::SegmentTree, provider::legacy::Add};
 
     fn template(n: usize) {
         let point_add_range_sum: _ = SegmentTree::<_, usize, Add, Add>::from_iter(0..n);
