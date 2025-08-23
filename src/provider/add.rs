@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use num_traits::Zero;
 
-use crate::traits::{Monoid, MonoidAction};
+use crate::traits::Monoid;
 
 /// Represents `+` operation.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]

@@ -42,17 +42,11 @@ pub mod provider {
     mod max;
     pub use max::Max;
 
-    mod min;
-    pub use min::Min;
-
     mod assign;
     pub use assign::Assign;
 
     mod affine;
     pub use affine::Affine;
-
-    /// will be removed
-    pub mod legacy;
 }
 
 pub mod traits;

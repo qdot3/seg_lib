@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use num_traits::{One, Zero};
 
-use crate::traits::{Monoid, MonoidAction};
+use crate::traits::Monoid;
 
 /// Represents affine transformation.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
