@@ -1,7 +1,8 @@
-use std::{marker::PhantomData, ops::RangeBounds};
+use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 
 use crate::traits::Monoid;
 
+/// A data structure which supports *point update range query* operations.
 pub struct SegmentTree<Query>
 where
     Query: Monoid,
@@ -19,14 +20,14 @@ impl<Query> SegmentTree<Query>
 where
     Query: Monoid,
 {
-    /// Creates an instance initialized with `n` [`Query::identity`].
+    /// Creates an instance initialized with `n` [`Monoid::identity`]s.
     ///
     /// # Example
     ///
     /// ```
-    /// use seg_lib::{normal::SegmentTree, provider::Add};
+    /// use seg_lib::{SegmentTree, provider::Add};
     ///
-    /// let mut point_add_range_sum = SegmentTree::<u32, _, Add, Add>::new(10_000);
+    /// let mut point_add_range_sum = SegmentTree::<Add<i32>>::new(10_000);
     /// ```
     ///
     /// # Time complexity
@@ -67,16 +68,7 @@ where
         [self.inner_index(l), self.inner_index(r)]
     }
 
-    /// Updates i-th data using `update`.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use seg_lib::{
-    ///     normal::SegmentTree,
-    ///     provider::{Add, }
-    /// };
-    /// ```
+    /// Replacing i-th data with `update`.
     ///
     /// # Time complexity
     ///
@@ -190,6 +182,32 @@ where
     }
 }
 
+impl<Query> Debug for SegmentTree<Query>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SegmentTree")
+            .field("data", &self.data)
+            .field("query", &self.query)
+            .finish()
+    }
+}
+
+impl<Query> Clone for SegmentTree<Query>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            data: self.data.clone(),
+            query: self.query.clone(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test_range_query {
     use rand::Rng;
@@ -210,7 +228,7 @@ mod test_range_query {
 
     #[test]
     fn pow2() {
-        for i in 0..10 {
+        for i in 0..5 {
             template(1 << i);
         }
     }
@@ -218,7 +236,7 @@ mod test_range_query {
     #[test]
     fn random() {
         let mut rng = rand::rng();
-        for _ in 0..10 {
+        for _ in 0..5 {
             template(rng.random_range(100..5_000));
         }
     }

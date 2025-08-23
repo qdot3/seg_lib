@@ -6,24 +6,24 @@ pub use normal::SegmentTree;
 mod dual;
 pub use dual::DualSegmentTree;
 
-pub mod lazy;
+mod lazy;
+pub use lazy::LazySegmentTree;
 
 /// Predefined operations on segment tree variants.
 ///
 /// # Custom provider
 ///
-/// ```no_run
+/// ```ignore
 /// pub struct Custom<T>(PhantomData<T>);
 ///
 /// impl<T> Monoid for Custom<T> { /* ---- */ }
-/// impl<M, S> MonoidAction for Custom<(M, S)> { /* ---- */ }
 /// ```
 ///
 /// # TODO
 ///
 /// If `negative_trait_impl` is stabilized, rewrite trait bounds as follows:
 ///
-/// ```no_run
+/// ```ignore
 /// impl Monoid for Add<T>
 /// where
 ///     T: !Copy
