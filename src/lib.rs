@@ -1,7 +1,12 @@
 //! `seg_lib` is
 
-pub mod dual;
-pub mod normal;
+mod normal;
+pub use normal::SegmentTree;
+
+mod dual;
+pub use dual::DualSegmentTree;
+
+pub mod lazy;
 
 /// Predefined operations on segment tree variants.
 ///

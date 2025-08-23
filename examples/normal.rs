@@ -1,13 +1,13 @@
 // verification-helper: PROBLEM https://judge.yosupo.jp/problem/point_add_range_sum
 
 use proconio::{fastout, input};
-use seg_lib::{normal::SegmentTree, provider::legacy::Add};
+use seg_lib::{SegmentTree, provider::Add};
 
 #[fastout]
 fn main() {
     input! { n: usize, q: usize, a: [u64; n], }
 
-    let mut seg_tree = SegmentTree::<_, _, Add, Add>::from(a);
+    let mut seg_tree = SegmentTree::<Add<u64>>::from(a);
 
     for _ in 0..q {
         input! { flag: u8, }

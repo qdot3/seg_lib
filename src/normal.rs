@@ -1,31 +1,23 @@
-use std::{
-    marker::PhantomData,
-    ops::{Range, RangeBounds},
-};
+use std::{marker::PhantomData, ops::RangeBounds};
 
-use crate::traits::{Query, Update};
+use crate::traits::Monoid;
 
-#[derive(Debug, Clone)]
-pub struct SegmentTree<T, U, QueryProvider, UpdateProvider>
+pub struct SegmentTree<Query>
 where
-    QueryProvider: Query<T>,
-    UpdateProvider: Update<U, Set = T>,
+    Query: Monoid,
 {
     /// Use `Box<T>` because the length is significant as follows.
     ///
     /// - data\[0\]    : dummy node (meaningless)
     /// - data\[1..n\] : nodes to store the combined value of the children.
     /// - data\[n..2n\]: nodes to store value for each cell.
-    data: Box<[T]>,
-    update_type: PhantomData<U>,
-    query_adapter: PhantomData<QueryProvider>,
-    update_adapter: PhantomData<UpdateProvider>,
+    data: Box<[<Query as Monoid>::Set]>,
+    query: PhantomData<Query>,
 }
 
-impl<T, U, QueryProvider, UpdateProvider> SegmentTree<T, U, QueryProvider, UpdateProvider>
+impl<Query> SegmentTree<Query>
 where
-    QueryProvider: Query<T>,
-    UpdateProvider: Update<U, Set = T>,
+    Query: Monoid,
 {
     /// Creates an instance initialized with `n` [`Query::identity`].
     ///
@@ -41,16 +33,12 @@ where
     ///
     /// *O*(*N*)
     pub fn new(n: usize) -> Self {
-        let data = Vec::from_iter(
-            std::iter::repeat_with(<QueryProvider as Query<T>>::identity).take(n << 1),
-        )
-        .into_boxed_slice();
+        let data = Vec::from_iter(std::iter::repeat_with(<Query as Monoid>::identity).take(n << 1))
+            .into_boxed_slice();
 
         Self {
             data,
-            update_type: PhantomData,
-            query_adapter: PhantomData,
-            update_adapter: PhantomData,
+            query: PhantomData,
         }
     }
 
@@ -61,7 +49,10 @@ where
 
     /// Returns `[l, r)` on `self.data`.
     #[inline]
-    fn inner_range(&self, range: Range<usize>) -> [usize; 2] {
+    fn inner_range<R>(&self, range: R) -> [usize; 2]
+    where
+        R: RangeBounds<usize>,
+    {
         let l = match range.start_bound() {
             std::ops::Bound::Included(l) => *l,
             std::ops::Bound::Excluded(l) => l + 1,
@@ -90,13 +81,12 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn point_update(&mut self, i: usize, update: U) {
+    pub fn point_update(&mut self, i: usize, element: <Query as Monoid>::Set) {
         let mut i = self.inner_index(i);
-        self.data[i] = <UpdateProvider as Update<U>>::update(&update, &self.data[i]);
+        self.data[i] = element;
         while i > 1 {
             i >>= 1;
-            self.data[i] =
-                <QueryProvider as Query<T>>::combine(&self.data[i * 2], &self.data[i * 2 + 1])
+            self.data[i] = <Query as Monoid>::combine(&self.data[i << 1], &self.data[(i << 1) + 1])
         }
     }
 
@@ -105,7 +95,7 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
-    pub fn point_query(&self, i: usize) -> &T {
+    pub fn point_query(&self, i: usize) -> &<Query as Monoid>::Set {
         let i = self.inner_index(i);
         &self.data[i]
     }
@@ -115,107 +105,84 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn range_query(&self, range: Range<usize>) -> T {
-        if range.is_empty() {
-            return <QueryProvider as Query<T>>::identity();
+    pub fn range_query<R>(&self, range: R) -> <Query as Monoid>::Set
+    where
+        R: RangeBounds<usize>,
+    {
+        let [l, r] = self.inner_range(range);
+        if l >= r {
+            return <Query as Monoid>::identity();
         }
-
-        let [mut l, mut r] = self.inner_range(range);
         // l + 1 == r because l < r except when overflow occurs
         if l ^ r == 1 {
-            return <QueryProvider as Query<T>>::combine(
-                &<QueryProvider as Query<T>>::identity(),
-                &self.data[l],
-            );
+            return <Query as Monoid>::combine(&<Query as Monoid>::identity(), &self.data[l]);
         }
 
-        l >>= l.trailing_zeros();
-        r >>= r.trailing_zeros();
-        let (mut acc_l, mut acc_r) = (
-            <QueryProvider as Query<T>>::identity(),
-            <QueryProvider as Query<T>>::identity(),
-        );
+        let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
+        let (mut acc_l, mut acc_r) = (<Query as Monoid>::identity(), <Query as Monoid>::identity());
         while {
             if l >= r {
-                acc_l = <QueryProvider as Query<T>>::combine(&acc_l, &self.data[l]);
+                acc_l = <Query as Monoid>::combine(&acc_l, &self.data[l]);
                 l += 1;
                 l >>= l.trailing_zeros()
             } else {
                 r -= 1; // r > l >= 0
-                acc_r = <QueryProvider as Query<T>>::combine(&self.data[r], &acc_r);
+                acc_r = <Query as Monoid>::combine(&self.data[r], &acc_r);
                 r >>= r.trailing_zeros();
             }
 
             l != r
         } {}
 
-        <QueryProvider as Query<T>>::combine(&acc_l, &acc_r)
+        <Query as Monoid>::combine(&acc_l, &acc_r)
     }
 }
 
-impl<T, U, QueryProvider, UpdateProvider> From<Vec<T>>
-    for SegmentTree<T, U, QueryProvider, UpdateProvider>
+impl<Query> From<Vec<<Query as Monoid>::Set>> for SegmentTree<Query>
 where
-    QueryProvider: Query<T>,
-    UpdateProvider: Update<U, Set = T>,
+    Query: Monoid,
 {
-    /// Converts a [`Vec<T>`] into a [`SegmentTree<T, _, _, _>`].
-    ///
-    /// # Time Complexity
-    ///
-    /// *O*(*N*)
-    fn from(values: Vec<T>) -> Self {
+    fn from(values: Vec<<Query as Monoid>::Set>) -> Self {
         let mut data = Vec::from_iter(
-            std::iter::repeat_with(<QueryProvider as Query<T>>::identity)
+            std::iter::repeat_with(<Query as Monoid>::identity)
                 .take(values.len())
                 .chain(values),
         )
         .into_boxed_slice();
 
         for i in (1..data.len() / 2).rev() {
-            data[i] = <QueryProvider as Query<T>>::combine(&data[i * 2], &data[i * 2 + 1])
+            data[i] = <Query as Monoid>::combine(&data[i * 2], &data[i * 2 + 1])
         }
 
         Self {
             data,
-            update_type: PhantomData,
-            query_adapter: PhantomData,
-            update_adapter: PhantomData,
+            query: PhantomData,
         }
     }
 }
 
-impl<T, U, QueryProvider, UpdateProvider> FromIterator<T>
-    for SegmentTree<T, U, QueryProvider, UpdateProvider>
+impl<Query> FromIterator<<Query as Monoid>::Set> for SegmentTree<Query>
 where
-    QueryProvider: Query<T>,
-    UpdateProvider: Update<U, Set = T>,
+    Query: Monoid,
 {
-    /// Creates a [`SegmentTree<T, _, _, _>`] from an iterator.
-    ///
-    /// # Time Complexity
-    ///
-    /// *O*(*N*)
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item = <Query as Monoid>::Set>>(iter: I) -> Self {
         let iter = iter.into_iter();
         let (min, max) = iter.size_hint();
         if Some(min) == max {
             let mut data = Vec::from_iter(
-                std::iter::repeat_with(<QueryProvider as Query<T>>::identity)
+                std::iter::repeat_with(<Query as Monoid>::identity)
                     .take(min)
                     .chain(iter),
             )
             .into_boxed_slice();
 
             for i in (1..min).rev() {
-                data[i] = <QueryProvider as Query<T>>::combine(&data[i * 2], &data[i * 2 + 1])
+                data[i] = <Query as Monoid>::combine(&data[i * 2], &data[i * 2 + 1])
             }
 
             Self {
                 data,
-                update_type: PhantomData,
-                query_adapter: PhantomData,
-                update_adapter: PhantomData,
+                query: PhantomData,
             }
         } else {
             Self::from(Vec::from_iter(iter))
@@ -227,10 +194,10 @@ where
 mod test_range_query {
     use rand::Rng;
 
-    use crate::{normal::SegmentTree, provider::legacy::Add};
+    use crate::{SegmentTree, provider::Add};
 
     fn template(n: usize) {
-        let point_add_range_sum: _ = SegmentTree::<_, usize, Add, Add>::from_iter(0..n);
+        let point_add_range_sum: _ = SegmentTree::<Add<usize>>::from_iter(0..n);
         for i in 0..n {
             for j in i + 1..n {
                 assert_eq!(

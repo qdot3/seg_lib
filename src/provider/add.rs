@@ -26,27 +26,27 @@ where
     }
 }
 
-impl<M, S> MonoidAction for Add<(M, S)>
-where
-    M: Zero,
-    for<'a> &'a M: std::ops::Add<Output = M>,
-    for<'a, 'b> &'a M: std::ops::Add<&'b S, Output = S>,
-{
-    type Map = M;
+// impl<M, S> MonoidAction for Add<(M, S)>
+// where
+//     M: Zero,
+//     for<'a> &'a M: std::ops::Add<Output = M>,
+//     for<'a, 'b> &'a M: std::ops::Add<&'b S, Output = S>,
+// {
+//     type Map = M;
 
-    type Set = S;
+//     type Set = S;
 
-    const IS_COMMUTATIVE: bool = true;
+//     const IS_COMMUTATIVE: bool = true;
 
-    fn identity() -> Self::Map {
-        M::zero()
-    }
+//     fn identity() -> Self::Map {
+//         M::zero()
+//     }
 
-    fn combine(lhs: &Self::Map, rhs: &Self::Map) -> Self::Map {
-        lhs + rhs
-    }
+//     fn combine(lhs: &Self::Map, rhs: &Self::Map) -> Self::Map {
+//         lhs + rhs
+//     }
 
-    fn apply(mapping: &Self::Map, element: &Self::Set) -> Self::Set {
-        mapping + element
-    }
-}
+//     fn apply(mapping: &Self::Map, element: &Self::Set) -> Self::Set {
+//         mapping + element
+//     }
+// }

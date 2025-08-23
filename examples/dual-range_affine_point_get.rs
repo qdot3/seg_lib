@@ -1,7 +1,7 @@
 // verification-helper: PROBLEM https://judge.yosupo.jp/problem/range_affine_point_get
 
 use proconio::{fastout, input};
-use seg_lib::{dual::DualSegmentTree, traits::Monoid};
+use seg_lib::{DualSegmentTree, traits::Monoid};
 
 const MOD: u64 = 998_244_353;
 

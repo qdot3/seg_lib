@@ -74,14 +74,14 @@ pub trait Monoid {
     fn combine(lhs: &Self::Set, rhs: &Self::Set) -> Self::Set;
 }
 
-/// A **monoid action** is a function `*: Map x Set -> Set` of `Map` on `Set`.
+/// A **monoid action** is a function `*: M x S -> S` of a monoid `M` on a set `S`.
 ///
 /// # Lows
 ///
 /// ```text
 /// (1) (Map, ·, e) is a monoid
-/// (2) (f · g) * a = f * (g * a)    ∀ f, g ∈ Map, ∀ a ∈ Set
-/// (3) e * a = a                    ∃   e  ∈ Map, ∀ a ∈ Set
+/// (2) (f · g) * a = f * (g * a)    ∀ f, g ∈ M, ∀ a ∈ S
+/// (3) e * a = a                    ∃   e  ∈ M, ∀ a ∈ S
 /// ```
 ///
 /// See [Monoid] for reference.
@@ -109,5 +109,7 @@ pub trait MonoidAction {
     fn combine(lhs: &Self::Map, rhs: &Self::Map) -> Self::Map;
 
     /// Applies the mapping on the element and returns the result.
+    ///
+    /// If size of each segment is required, add it to each element, **not** mapping.
     fn apply(mapping: &Self::Map, element: &Self::Set) -> Self::Set;
 }
