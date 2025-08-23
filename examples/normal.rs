@@ -15,7 +15,7 @@ fn main() {
         if flag == 0 {
             input! { p: usize, x: u64, }
 
-            seg_tree.point_update(p, x);
+            seg_tree.point_update(p, x + seg_tree.point_query(p));
         } else if flag == 1 {
             input! { l: usize, r: usize, }
 
@@ -23,5 +23,8 @@ fn main() {
         } else {
             unreachable!()
         }
+
+        #[cfg(debug_assertions)]
+        eprintln!("{:?}", seg_tree);
     }
 }
