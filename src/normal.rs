@@ -82,6 +82,18 @@ where
         }
     }
 
+    pub fn point_update_with<F>(&mut self, i: usize, update: F)
+    where
+        F: FnOnce(&<Query as Monoid>::Set) -> <Query as Monoid>::Set,
+    {
+        let mut i = self.inner_index(i);
+        self.data[i] = update(&self.data[i]);
+        while i > 1 {
+            i >>= 1;
+            self.data[i] = <Query as Monoid>::combine(&self.data[i << 1], &self.data[(i << 1) + 1])
+        }
+    }
+
     /// Returns a shared reference of i-th data.
     ///
     /// # Time complexity

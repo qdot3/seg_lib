@@ -15,7 +15,7 @@ fn main() {
         if flag == 0 {
             input! { p: usize, x: u64, }
 
-            seg_tree.point_update(p, x + seg_tree.point_query(p));
+            seg_tree.point_update_with(p, |v| v + x);
         } else if flag == 1 {
             input! { l: usize, r: usize, }
 
