@@ -11,7 +11,6 @@ where
     data: Box<[<Query as Monoid>::Set]>,
     lazy: Box<[<Update as Monoid>::Set]>,
 
-    /// i-th element corresponds to 2^i
     segment_size: Option<Box<[usize]>>,
 
     // for debug
