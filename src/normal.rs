@@ -27,7 +27,7 @@ where
     /// ```
     /// use seg_lib::{SegmentTree, provider::Add};
     ///
-    /// let mut point_add_range_sum = SegmentTree::<Add<i32>>::new(10_000);
+    /// let mut point_update_range_sum = SegmentTree::<Add<i32>>::new(10_000);
     /// ```
     ///
     /// # Time complexity

@@ -91,6 +91,11 @@ where
         self.data[i] = <Query as Monoid>::combine(&self.eval(i << 1), &self.eval((i << 1) | 1))
     }
 
+    /// Answers the query for the given range.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
     pub fn range_update<R>(&mut self, range: R, update: <Update as MonoidWithAction>::Map)
     where
         R: RangeBounds<usize>,
@@ -138,6 +143,12 @@ where
         }
     }
 
+    /// Updates elements in the range using [`Monoid::combine()`].
+    /// More precisely, `a[i] <- update · a[i], i ∈ range`
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<usize>,
