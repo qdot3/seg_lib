@@ -45,7 +45,7 @@ pub trait Monoid {
 /// ```
 ///
 /// See [Monoid] for reference.
-pub trait MonoidAction {
+pub trait MonoidWithAction {
     type Map;
     type Set;
 
@@ -60,16 +60,19 @@ pub trait MonoidAction {
     /// ```
     const IS_COMMUTATIVE: bool;
 
+    ///
+    const USE_SEGMENT_SIZE: bool;
+
     /// Returns the identity mapping.
     fn identity() -> Self::Map;
 
-    /// Combines the two maps and returns the result.
-    ///
-    /// If the operation is **not** commutative, be careful of the order of elements.
-    fn combine(lhs: &Self::Map, rhs: &Self::Map) -> Self::Map;
+    /// Combines the two maps in chronological order.
+    fn combine(prev: &mut Self::Map, new: &Self::Map);
 
-    /// Applies the mapping on the element and returns the result.
+    /// Acts the mapping on the element and returns the result.
     ///
-    /// If size of each segment is required, add it to each element, **not** mapping.
-    fn apply(mapping: &Self::Map, element: &Self::Set) -> Self::Set;
+    /// In a [`LazySegmentTree`](crate::lazy::LazySegmentTree), updates are applied simultaneously
+    /// to `2^n` elements internally.
+    /// If update operation depends on the size of the segment, set [`Self::USE_SEGMENT_SIZE`] to [`true`].
+    fn act(mapping: &Self::Map, element: &Self::Set, size: Option<usize>) -> Self::Set;
 }

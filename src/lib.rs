@@ -1,4 +1,4 @@
-//! `seg_lib` is
+//! `seg_lib` provides segment tree variants.
 
 mod normal;
 pub use normal::SegmentTree;
