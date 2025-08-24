@@ -1,4 +1,5 @@
 {
-"examples/dual-range_affine_point_get.rs": "2025-08-24 18:32:24 +0900",
-"examples/normal.rs": "2025-08-24 18:32:24 +0900"
+"examples/dual-range_affine_point_get.rs": "2025-08-24 18:41:26 +0900",
+"examples/lazy-range_affine_range_sum.rs": "2025-08-24 18:41:26 +0900",
+"examples/normal.rs": "2025-08-24 18:41:26 +0900"
 }
