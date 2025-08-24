@@ -1,7 +1,10 @@
 // verification-helper: PROBLEM https://judge.yosupo.jp/problem/range_affine_range_sum
 
 use proconio::{fastout, input};
-use seg_lib::{LazySegmentTree, provider::Add, traits::MonoidWithAction};
+use seg_lib::{
+    LazySegmentTree,
+    traits::{Monoid, MonoidWithAction},
+};
 
 const MOD: u64 = 998_244_353;
 
@@ -9,7 +12,7 @@ const MOD: u64 = 998_244_353;
 fn main() {
     input! { n: usize, q: usize, a: [u64; n], }
 
-    let mut lst = LazySegmentTree::<Add<u64>, ModAffine<MOD>>::from(a);
+    let mut lst = LazySegmentTree::<ModAdd<MOD>, ModAffine<MOD>>::from(a);
 
     for _ in 0..q {
         input! { flag: u8, }
@@ -31,6 +34,21 @@ fn main() {
     }
 }
 
+struct ModAdd<const MOD: u64>;
+
+impl<const MOD: u64> Monoid for ModAdd<MOD> {
+    type Set = u64;
+
+    const IS_COMMUTATIVE: bool = true;
+
+    fn identity() -> Self::Set {
+        0
+    }
+
+    fn combine(lhs: &Self::Set, rhs: &Self::Set) -> Self::Set {
+        (lhs + rhs) % MOD
+    }
+}
 struct ModAffine<const MOD: u64>;
 
 impl<const MOD: u64> MonoidWithAction for ModAffine<MOD> {
