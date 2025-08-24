@@ -52,6 +52,8 @@ pub trait MonoidAction {
     /// Set [`true`] to use the segment size in [`Self::act()`]
     const USE_SEGMENT_SIZE: bool;
 
+    /// Acts the mapping on the element and returns the result.
+    ///
     /// # Low
     ///
     /// ```text
@@ -71,4 +73,35 @@ pub trait MonoidAction {
         element: &<Self::Set as Monoid>::Set,
         size: Option<usize>,
     ) -> <Self::Set as Monoid>::Set;
+}
+
+pub trait MonoidActionBeats {
+    type Map: Monoid;
+    type Set: Monoid;
+
+    /// Set [`true`] to use the segment size in [`Self::act()`]
+    const USE_SEGMENT_SIZE: bool;
+
+    /// Acts the mapping on the element and returns the result.
+    ///
+    /// # Low
+    ///
+    /// ```text
+    /// Σ_i f(a_i) = f(Σ_i a_i)    in most cases
+    /// Σ_i f(a_i) ≠ f(Σ_i a_i)    in rare cases
+    /// ```
+    ///
+    /// # Size dependency
+    ///
+    /// You can access segment size if you want.
+    /// This is equivalent to attaching the segment size information to [`Self::Set`] as follows:
+    ///
+    /// ```text
+    /// Σ_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
+    /// ```
+    fn try_act(
+        mapping: &<Self::Map as Monoid>::Set,
+        element: &<Self::Set as Monoid>::Set,
+        size: Option<usize>,
+    ) -> Result<<Self::Set as Monoid>::Set, ()>;
 }

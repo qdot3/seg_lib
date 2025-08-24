@@ -9,6 +9,9 @@ pub use dual::DualSegmentTree;
 mod lazy;
 pub use lazy::LazySegmentTree;
 
+mod beats;
+pub use beats::SegmentTreeBeats;
+
 /// Predefined operations on segment tree variants.
 ///
 /// # Custom provider
