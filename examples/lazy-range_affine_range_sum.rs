@@ -3,7 +3,7 @@
 use proconio::{fastout, input};
 use seg_lib::{
     LazySegmentTree,
-    traits::{Monoid, MonoidWithAction},
+    traits::{Monoid, MonoidAction},
 };
 
 const MOD: u64 = 998_244_353;
@@ -51,22 +51,31 @@ impl<const MOD: u64> Monoid for ModAdd<MOD> {
 }
 struct ModAffine<const MOD: u64>;
 
-impl<const MOD: u64> MonoidWithAction for ModAffine<MOD> {
-    type Map = [u64; 2];
-    type Set = u64;
+impl<const MOD: u64> Monoid for ModAffine<MOD> {
+    type Set = [u64; 2];
 
     const IS_COMMUTATIVE: bool = false;
-    const USE_SEGMENT_SIZE: bool = true;
 
-    fn identity() -> Self::Map {
+    fn identity() -> Self::Set {
         [1, 0]
     }
 
-    fn combine(prev: &mut Self::Map, new: &Self::Map) {
-        *prev = [new[0] * prev[0] % MOD, (new[0] * prev[1] + new[1]) % MOD]
+    fn combine(prev: &Self::Set, new: &Self::Set) -> Self::Set {
+        [new[0] * prev[0] % MOD, (new[0] * prev[1] + new[1]) % MOD]
     }
+}
 
-    fn act(mapping: &Self::Map, element: &Self::Set, size: Option<usize>) -> Self::Set {
-        (mapping[0] * *element + size.unwrap() as u64 * mapping[1]) % MOD
+impl<const MOD: u64> MonoidAction for ModAffine<MOD> {
+    type Map = ModAffine<MOD>;
+    type Set = ModAdd<MOD>;
+
+    const USE_SEGMENT_SIZE: bool = true;
+
+    fn act(
+        mapping: &<Self::Map as Monoid>::Set,
+        element: &<Self::Set as Monoid>::Set,
+        size: Option<usize>,
+    ) -> <Self::Set as Monoid>::Set {
+        (mapping[0] * element + size.unwrap() as u64 * mapping[1]) % MOD
     }
 }
