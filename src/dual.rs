@@ -247,7 +247,7 @@ where
 mod range_update {
     use rand::Rng;
 
-    use crate::{dual::DualSegmentTree, provider::Add};
+    use crate::{dual::DualSegmentTree, ops::Add};
 
     fn template(n: usize) {
         let mut dual = DualSegmentTree::<Add<usize>>::new(n);

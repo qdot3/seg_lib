@@ -12,6 +12,6 @@ pub use lazy::LazySegmentTree;
 mod beats;
 pub use beats::SegmentTreeBeats;
 
-pub mod provider;
+pub mod ops;
 
 pub mod traits;

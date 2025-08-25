@@ -229,7 +229,7 @@ where
 mod test_range_query {
     use rand::Rng;
 
-    use crate::{SegmentTree, provider::Add};
+    use crate::{SegmentTree, ops::Add};
 
     fn template(n: usize) {
         let point_add_range_sum = SegmentTree::<Add<usize>>::from_iter(0..n);
