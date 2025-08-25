@@ -232,7 +232,7 @@ mod test_range_query {
     use crate::{SegmentTree, provider::Add};
 
     fn template(n: usize) {
-        let point_add_range_sum: _ = SegmentTree::<Add<usize>>::from_iter(0..n);
+        let point_add_range_sum = SegmentTree::<Add<usize>>::from_iter(0..n);
         for i in 0..n {
             for j in i + 1..n {
                 assert_eq!(

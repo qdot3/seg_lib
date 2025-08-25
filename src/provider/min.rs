@@ -5,7 +5,6 @@ use num_traits::bounds::UpperBounded;
 use crate::traits::Monoid;
 
 /// Represents `chmin` operation.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Min<T>(PhantomData<T>);
 
 impl<T> Monoid for Min<T>

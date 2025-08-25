@@ -30,7 +30,7 @@ fn main() {
         }
 
         #[cfg(debug_assertions)]
-        eprintln!("{:?}", lst)
+        eprintln!("{lst:?}")
     }
 }
 

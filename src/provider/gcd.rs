@@ -9,7 +9,6 @@ use crate::traits::Monoid;
 /// # Notes
 ///
 /// Following [`Integer`], defines the identity element of `gcd` as `0`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GCD<T>(PhantomData<T>);
 
 impl<T> Monoid for GCD<T>

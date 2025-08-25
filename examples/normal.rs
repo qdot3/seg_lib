@@ -25,6 +25,6 @@ fn main() {
         }
 
         #[cfg(debug_assertions)]
-        eprintln!("{:?}", seg_tree);
+        eprintln!("{seg_tree:?}");
     }
 }
