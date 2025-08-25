@@ -1,3 +1,5 @@
+//! Traits that abstracts the algebra which can be applied over a segment tree variants.
+
 /// A **monoid** is a set equipped with an associative binary operation and an identity element.
 ///
 /// # Lows
@@ -44,7 +46,6 @@ pub trait Monoid {
 /// ```
 ///
 /// See [Monoid] for reference.
-
 pub trait MonoidAction {
     type Map: Monoid;
     type Set: Monoid;
@@ -75,11 +76,14 @@ pub trait MonoidAction {
     ) -> <Self::Set as Monoid>::Set;
 }
 
+/// An incomplete **monoid action** which fails in rare cases.
+///
+/// See [`MonoidAction`] for details.
 pub trait MonoidActionBeats {
     type Map: Monoid;
     type Set: Monoid;
 
-    /// Set [`true`] to use the segment size in [`Self::act()`]
+    /// Set [`true`] to use the segment size in [`Self::try_act()`]
     const USE_SEGMENT_SIZE: bool;
 
     /// Acts the mapping on the element and returns the result.

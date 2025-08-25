@@ -220,7 +220,7 @@ where
     fn clone(&self) -> Self {
         Self {
             data: self.data.clone(),
-            query: self.query.clone(),
+            query: self.query,
         }
     }
 }

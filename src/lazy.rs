@@ -346,8 +346,8 @@ where
             data: self.data.clone(),
             lazy: self.lazy.clone(),
             segment_size: self.segment_size.clone(),
-            query: self.query.clone(),
-            update: self.update.clone(),
+            query: self.query,
+            update: self.update,
         }
     }
 }

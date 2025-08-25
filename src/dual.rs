@@ -238,7 +238,7 @@ where
     fn clone(&self) -> Self {
         Self {
             data: self.data.clone(),
-            update: PhantomData,
+            update: self.update,
         }
     }
 }
