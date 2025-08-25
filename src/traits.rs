@@ -68,7 +68,8 @@ pub trait MonoidAction {
     ) -> <Self::Set as Monoid>::Set;
 }
 
-/// An operation that is not strictly a monoid action but can be treated as one under explicit conditions.
+/// A function that behaves like a monoid action under well-defined conditions,
+/// which frequently hold in practice.
 ///
 /// # Low
 ///
