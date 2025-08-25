@@ -1,7 +1,6 @@
-#![deprecated = "UNDER CONSTRUCTION"]
-
 use crate::traits::{Monoid, QuasiMonoidAction};
 
+/// UNDER CONSTRUCTION
 pub struct SegmentTreeBeats<Query, Update>
 where
     Query: Monoid,
