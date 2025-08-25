@@ -50,3 +50,7 @@ pub use assign::Assign;
 
 mod affine;
 pub use affine::Affine;
+
+mod gcd;
+
+mod lcm;

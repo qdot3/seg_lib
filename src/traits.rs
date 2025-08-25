@@ -29,7 +29,7 @@ pub trait Monoid {
 
     /// Combines the two elements and returns the result.
     ///
-    /// # Caution
+    /// # Warning
     ///
     /// If the operation is **not** commutative, the position of the arguments matters.
     fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set;
