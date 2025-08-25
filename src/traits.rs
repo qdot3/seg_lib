@@ -1,4 +1,4 @@
-//! Traits that abstracts the algebra which can be applied over a segment tree variants.
+//! Traits that abstracts the algebra that can be applied over a segment tree variants.
 
 /// A **monoid** is a set equipped with an associative binary operation and an identity element.
 ///

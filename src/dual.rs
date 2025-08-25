@@ -2,7 +2,7 @@ use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 
 use crate::traits::Monoid;
 
-/// A data structure which supports *point query range update* operations.
+/// A data structure that supports *point query range update* operations.
 pub struct DualSegmentTree<Update>
 where
     Update: Monoid,
