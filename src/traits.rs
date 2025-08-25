@@ -35,12 +35,12 @@ pub trait Monoid {
     fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set;
 }
 
-/// A **monoid action** is a function `*: M x S -> S` of a monoid `M` on a set `S`.
+/// A **monoid action** is a function `*: M x S -> S` of a monoid `M` on a monoid `S`.
 ///
 /// # Low
 ///
 /// ```text
-/// Σ_i f(a_i) = f(Σ_i a_i)
+/// Π_i f(a_i) = f(Σ_i a_i)
 /// ```
 ///
 /// See [Monoid] for reference.
@@ -59,7 +59,7 @@ pub trait MonoidAction {
     /// This is equivalent to attaching the segment size information to [`Self::Set`] as follows:
     ///
     /// ```text
-    /// Σ_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
+    /// Π_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
     /// ```
     fn act(
         mapping: &<Self::Map as Monoid>::Set,
@@ -73,8 +73,8 @@ pub trait MonoidAction {
 /// # Low
 ///
 /// ```text
-/// Σ_i f(a_i) = f(Σ_i a_i)    in most cases
-/// Σ_i f(a_i) ≠ f(Σ_i a_i)    in rare cases
+/// Π_i f(a_i) = f(Σ_i a_i)    in most cases
+/// Π_i f(a_i) ≠ f(Σ_i a_i)    in rare cases
 /// ```
 ///
 /// See [`MonoidAction`] for details.
@@ -93,7 +93,7 @@ pub trait QuasiMonoidAction {
     /// This is equivalent to attaching the segment size information to [`Self::Set`] as follows:
     ///
     /// ```text
-    /// Σ_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
+    /// Π_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
     /// ```
     fn try_act(
         mapping: &<Self::Map as Monoid>::Set,
