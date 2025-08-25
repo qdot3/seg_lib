@@ -25,7 +25,7 @@ where
     /// # Example
     ///
     /// ```
-    /// use seg_lib::{SegmentTree, provider::Add};
+    /// use seg_lib::{SegmentTree, ops::Add};
     ///
     /// let mut point_update_range_sum = SegmentTree::<Add<i32>>::new(10_000);
     /// ```

@@ -62,7 +62,7 @@ where
         let size = self
             .segment_size
             .as_ref()
-            .map(|segment_size| segment_size[i]);
+            .map(|segment_size| segment_size.get(i).copied().unwrap_or(1));
         <Update as MonoidAction>::act(&self.lazy[i], &self.data[i], size)
     }
 
@@ -250,13 +250,13 @@ where
 
         let segment_size = <Update as MonoidAction>::USE_SEGMENT_SIZE.then(|| {
             let mut segment_size =
-                Vec::from_iter(std::iter::repeat_n(0, n).chain(std::iter::repeat_n(1, n)))
-                    .into_boxed_slice();
+                Vec::from_iter(std::iter::repeat_n(0, n).chain(std::iter::repeat_n(1, n)));
             for i in (1..n).rev() {
                 segment_size[i] = segment_size[i << 1] + segment_size[(i << 1) | 1]
             }
+            segment_size.truncate(n);
 
-            segment_size
+            segment_size.into_boxed_slice()
         });
 
         Self {
@@ -294,13 +294,13 @@ where
 
             let segment_size = <Update as MonoidAction>::USE_SEGMENT_SIZE.then(|| {
                 let mut segment_size =
-                    Vec::from_iter(std::iter::repeat_n(0, min).chain(std::iter::repeat_n(1, min)))
-                        .into_boxed_slice();
+                    Vec::from_iter(std::iter::repeat_n(0, min).chain(std::iter::repeat_n(1, min)));
                 for i in (1..min).rev() {
                     segment_size[i] = segment_size[i << 1] + segment_size[(i << 1) | 1]
                 }
+                segment_size.truncate(min);
 
-                segment_size
+                segment_size.into_boxed_slice()
             });
 
             Self {

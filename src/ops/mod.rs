@@ -1,6 +1,6 @@
 //! Predefined operations on segment tree variants.
 //!
-//! # Custom provider
+//! # Custom operation
 //!
 //! ```ignore
 //! pub struct Custom<T>(PhantomData<T>);
