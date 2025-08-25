@@ -37,12 +37,10 @@ pub trait Monoid {
 
 /// A **monoid action** is a function `*: M x S -> S` of a monoid `M` on a set `S`.
 ///
-/// # Lows
+/// # Low
 ///
 /// ```text
-/// (1) (Map, ·, e) is a monoid
-/// (2) (f · g) * a = f * (g * a)    ∀ f, g ∈ M, ∀ a ∈ S
-/// (3) e * a = a                    ∃   e  ∈ M, ∀ a ∈ S
+/// Σ_i f(a_i) = f(Σ_i a_i)
 /// ```
 ///
 /// See [Monoid] for reference.
@@ -54,12 +52,6 @@ pub trait MonoidAction {
     const USE_SEGMENT_SIZE: bool;
 
     /// Acts the mapping on the element and returns the result.
-    ///
-    /// # Low
-    ///
-    /// ```text
-    /// Σ_i f(a_i) = f(Σ_i a_i)
-    /// ```
     ///
     /// # Size dependency
     ///
@@ -77,7 +69,13 @@ pub trait MonoidAction {
 }
 
 /// An operation that is not strictly a monoid action but can be treated as one under explicit conditions.
-/// These conditions are easy to check and hold in many cases.
+///
+/// # Low
+///
+/// ```text
+/// Σ_i f(a_i) = f(Σ_i a_i)    in most cases
+/// Σ_i f(a_i) ≠ f(Σ_i a_i)    in rare cases
+/// ```
 ///
 /// See [`MonoidAction`] for details.
 pub trait QuasiMonoidAction {
@@ -88,13 +86,6 @@ pub trait QuasiMonoidAction {
     const USE_SEGMENT_SIZE: bool;
 
     /// Acts the mapping on the element and returns the result.
-    ///
-    /// # Low
-    ///
-    /// ```text
-    /// Σ_i f(a_i) = f(Σ_i a_i)    in most cases
-    /// Σ_i f(a_i) ≠ f(Σ_i a_i)    in rare cases
-    /// ```
     ///
     /// # Size dependency
     ///
