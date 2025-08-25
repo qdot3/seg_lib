@@ -89,7 +89,8 @@ where
         self.data[i] = <Query as Monoid>::combine(&self.eval(i << 1), &self.eval((i << 1) | 1))
     }
 
-    /// Answers the query for the given range.
+    /// Updates elements in the range using [`Monoid::combine()`].
+    /// More precisely, `a[i] <- update · a[i], i ∈ range`
     ///
     /// # Time complexity
     ///
@@ -141,6 +142,12 @@ where
         }
     }
 
+    /// Updates i-th element in the range using [`Monoid::combine()`].
+    /// More precisely, `a[i] <- update · a[i]`.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
     pub fn point_update(&mut self, i: usize, update: <Update as Monoid>::Set) {
         let i = self.inner_index(i);
 
@@ -159,8 +166,7 @@ where
         }
     }
 
-    /// Updates elements in the range using [`Monoid::combine()`].
-    /// More precisely, `a[i] <- update · a[i], i ∈ range`
+    /// Answers the query for the given range.
     ///
     /// # Time complexity
     ///
@@ -203,6 +209,11 @@ where
         <Query as Monoid>::combine(&acc_l, &acc_r)
     }
 
+    /// Answers the query for i-th element.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
     pub fn point_query(&mut self, i: usize) -> &<Query as Monoid>::Set {
         let i = self.inner_index(i);
 

@@ -73,7 +73,7 @@ where
         // children[1] = <Update as Monoid>::combine(&lazy, &children[1]);
     }
 
-    /// Returns `i`-th element combined in chronological order.
+    /// Returns `i`-th element.
     ///
     /// # Time complexity
     ///
@@ -88,6 +88,18 @@ where
         }
 
         res
+    }
+
+    /// Returns modified i-th element using `f`.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    pub fn point_query_with<F, T>(&self, i: usize, f: F) -> T
+    where
+        F: FnOnce(<Update as Monoid>::Set) -> T,
+    {
+        f(self.point_query(i))
     }
 
     /// Updates `i`-th element using [`Monoid::combine`].
