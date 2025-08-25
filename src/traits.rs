@@ -76,10 +76,11 @@ pub trait MonoidAction {
     ) -> <Self::Set as Monoid>::Set;
 }
 
-/// An incomplete **monoid action** which fails in rare cases.
+/// An operation that is not strictly a monoid action but can be treated as one under explicit conditions.
+/// These conditions are easy to check and hold in many cases.
 ///
 /// See [`MonoidAction`] for details.
-pub trait MonoidActionBeats {
+pub trait QuasiMonoidAction {
     type Map: Monoid;
     type Set: Monoid;
 
