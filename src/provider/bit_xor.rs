@@ -4,6 +4,8 @@ use num_traits::Zero;
 
 use crate::traits::Monoid;
 
+/// Represents `^` operation.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitXor<T>(PhantomData<T>);
 
 impl<T> Monoid for BitXor<T>

@@ -4,6 +4,7 @@ use num_traits::bounds::LowerBounded;
 
 use crate::traits::Monoid;
 
+/// Represents `chmax` operation.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Max<T>(PhantomData<T>);
 
