@@ -18,7 +18,7 @@ where
         None
     }
 
-    fn combine(lhs: &Self::Set, _: &Self::Set) -> Self::Set {
-        lhs.clone()
+    fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set {
+        rhs_or_new.as_ref().or(lhs_or_prev.as_ref()).cloned()
     }
 }

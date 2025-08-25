@@ -4,14 +4,12 @@ use num_traits::Zero;
 
 use crate::traits::Monoid;
 
-/// Represents `+` operation.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Add<T>(PhantomData<T>);
+pub struct BitOr<T>(PhantomData<T>);
 
-impl<T> Monoid for Add<T>
+impl<T> Monoid for BitOr<T>
 where
     T: Zero,
-    for<'a> &'a T: std::ops::Add<Output = T>,
+    for<'a> &'a T: std::ops::BitOr<Output = T>,
 {
     type Set = T;
 
@@ -22,6 +20,6 @@ where
     }
 
     fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set {
-        lhs_or_prev + rhs_or_new
+        lhs_or_prev | rhs_or_new
     }
 }

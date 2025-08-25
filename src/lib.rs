@@ -42,8 +42,23 @@ pub mod provider {
     mod add;
     pub use add::Add;
 
+    mod mul;
+    pub use mul::Mul;
+
+    mod bit_and;
+    pub use bit_and::BitAnd;
+
+    mod bit_or;
+    pub use bit_or::BitOr;
+
+    mod bit_xor;
+    pub use bit_xor::BitXor;
+
     mod max;
     pub use max::Max;
+
+    mod min;
+    pub use min::Min;
 
     mod assign;
     pub use assign::Assign;

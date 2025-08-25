@@ -1,15 +1,15 @@
 use std::marker::PhantomData;
 
-use num_traits::bounds::LowerBounded;
+use num_traits::bounds::UpperBounded;
 
 use crate::traits::Monoid;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Max<T>(PhantomData<T>);
+pub struct Min<T>(PhantomData<T>);
 
-impl<T> Monoid for Max<T>
+impl<T> Monoid for Min<T>
 where
-    T: Clone + LowerBounded,
+    T: Clone + UpperBounded,
     for<'a> &'a T: Ord,
 {
     type Set = T;
@@ -17,10 +17,10 @@ where
     const IS_COMMUTATIVE: bool = true;
 
     fn identity() -> Self::Set {
-        T::min_value()
+        T::max_value()
     }
 
-    fn combine(lhs: &Self::Set, rhs: &Self::Set) -> Self::Set {
-        lhs.min(rhs).clone()
+    fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set {
+        lhs_or_prev.min(rhs_or_new).clone()
     }
 }
