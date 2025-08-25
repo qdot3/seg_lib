@@ -114,7 +114,7 @@ where
             }
         }
 
-        // push the given update to corresponding lazy segments and reflect to corresponding data segments.
+        // push the given update to corresponding lazy segments
         {
             let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
             while {
@@ -138,6 +138,24 @@ where
         }
         for d in r.trailing_zeros() + 1..usize::BITS - r.leading_zeros() {
             self.recalculate((r - 1) >> d);
+        }
+    }
+
+    pub fn point_update(&mut self, i: usize, update: <Update as Monoid>::Set) {
+        let i = self.inner_index(i);
+
+        // lazy propagation
+        if !<Update as Monoid>::IS_COMMUTATIVE {
+            for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
+                self.propagate(i >> d);
+            }
+        }
+
+        self.lazy[i] = <Update as Monoid>::combine(&self.lazy[i], &update);
+
+        // recalculate
+        for d in i.trailing_zeros() + 1..usize::BITS - i.leading_zeros() {
+            self.recalculate(i >> d);
         }
     }
 
@@ -183,6 +201,17 @@ where
         } {}
 
         <Query as Monoid>::combine(&acc_l, &acc_r)
+    }
+
+    pub fn point_query(&mut self, i: usize) -> &<Query as Monoid>::Set {
+        let i = self.inner_index(i);
+
+        // lazy propagation
+        for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
+            self.propagate(i >> d);
+        }
+
+        &self.data[i]
     }
 }
 
