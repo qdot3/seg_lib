@@ -52,5 +52,7 @@ mod affine;
 pub use affine::Affine;
 
 mod gcd;
+pub use gcd::GCD;
 
 mod lcm;
+pub use lcm::LCM;
