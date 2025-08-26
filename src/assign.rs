@@ -211,7 +211,7 @@ where
         let i = self.inner_index(i);
 
         // lazy propagation in top-to-bottom order
-        for d in (1..self.buf_len.trailing_zeros()).rev() {
+        for d in (1..=self.buf_len.trailing_zeros()).rev() {
             self.propagate_at(i >> d);
         }
 
@@ -219,7 +219,7 @@ where
         self.data[i] = element;
 
         // recalculate data segments in bottom-to-top order
-        for d in 1..self.buf_len.trailing_zeros() {
+        for d in 1..=self.buf_len.trailing_zeros() {
             self.recalculate_at(i >> d);
         }
     }
@@ -279,7 +279,7 @@ where
         let i = self.inner_index(i);
 
         // lazy propagation in top-to-bottom order
-        for d in (1..self.buf_len.trailing_zeros()).rev() {
+        for d in (1..=self.buf_len.trailing_zeros()).rev() {
             self.propagate_at(i >> d);
         }
 
