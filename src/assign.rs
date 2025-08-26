@@ -12,7 +12,7 @@ where
     data: Box<[<Query as Monoid>::Set]>,
     /// the length is `data.len() / 2`
     lazy_ptr: Box<[usize]>,
-    /// vec![f^0,..., f^2i, ..., f^n.ilog2(), g^0, ..., g^2i, ..., g^n.ilog2(), h^0, ...]
+    /// vec![f,..., f^2i, ..., f^n.ilog2(), g, ..., g^2i, ..., g^n.ilog2(), h, ...]
     lazy_map: Vec<<Query as Monoid>::Set>,
 
     /// `n.next_power_of_2()`
@@ -170,6 +170,11 @@ where
         }
     }
 
+    /// Answers query for the given range.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<usize>,
