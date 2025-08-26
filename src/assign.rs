@@ -151,9 +151,9 @@ where
         // }
 
         // lazy propagation in top-to-bottom order
-        let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
+        let diff = usize::BITS - (l ^ (r - 1)).leading_zeros()+1;
         for d in (diff..=self.buf_len.trailing_zeros()).rev() {
-            self.propagate_at(l>>d);
+            self.propagate_at(l >> d);
         }
         for d in (l.trailing_zeros() + 1..diff).rev() {
             self.propagate_at(l >> d);
