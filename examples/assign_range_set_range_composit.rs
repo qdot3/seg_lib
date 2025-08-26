@@ -22,7 +22,7 @@ fn main() {
             input! { l: usize, r: usize, x: u64, }
 
             let (a, b) = ast.range_query(l..r);
-            println!("{}", a * x + b)
+            println!("{}", (a * x + b) % MOD)
         } else {
             unreachable!()
         }
