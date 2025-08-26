@@ -211,16 +211,15 @@ where
         let i = self.inner_index(i);
 
         // lazy propagation in top-to-bottom order
-        for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
+        for d in (1..self.buf_len.trailing_zeros()).rev() {
             self.propagate_at(i >> d);
         }
 
         // assign new element
-        self.lazy_map.push(element);
-        self.push_map(i, self.lazy_map.len() - 1);
+        self.data[i] = element;
 
         // recalculate data segments in bottom-to-top order
-        for d in i.trailing_zeros() + 1..usize::BITS - i.leading_zeros() {
+        for d in 1..self.buf_len.trailing_zeros() {
             self.recalculate_at(i >> d);
         }
     }
@@ -280,7 +279,7 @@ where
         let i = self.inner_index(i);
 
         // lazy propagation in top-to-bottom order
-        for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
+        for d in (1..self.buf_len.trailing_zeros()).rev() {
             self.propagate_at(i >> d);
         }
 
