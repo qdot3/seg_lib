@@ -65,7 +65,7 @@ monoid_tuple_impl!((M0, 0), (M1, 1), (M2, 2), (M3, 3),);
 /// # Low
 ///
 /// ```text
-/// Π_i f(a_i) = f(Σ_i a_i)
+/// Σ_i f(a_i) = f(Σ_i a_i)
 /// ```
 ///
 /// See [Monoid] for reference.
@@ -84,7 +84,7 @@ pub trait MonoidAction {
     /// This is equivalent to attaching the segment size information to [`Self::Set`] as follows:
     ///
     /// ```text
-    /// Π_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
+    /// Σ_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
     /// ```
     fn act(
         mapping: &<Self::Map as Monoid>::Set,
@@ -99,8 +99,8 @@ pub trait MonoidAction {
 /// # Low
 ///
 /// ```text
-/// Π_i f(a_i) = f(Σ_i a_i)    in most cases
-/// Π_i f(a_i) ≠ f(Σ_i a_i)    in rare cases
+/// Σ_i f(a_i) = f(Σ_i a_i)    in most cases
+/// Σ_i f(a_i) ≠ f(Σ_i a_i)    in rare cases
 /// ```
 ///
 /// See [`MonoidAction`] for details.
@@ -119,7 +119,7 @@ pub trait QuasiMonoidAction {
     /// This is equivalent to attaching the segment size information to [`Self::Set`] as follows:
     ///
     /// ```text
-    /// Π_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
+    /// Σ_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
     /// ```
     fn try_act(
         mapping: &<Self::Map as Monoid>::Set,
