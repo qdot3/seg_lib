@@ -35,6 +35,60 @@ pub trait Monoid {
     fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set;
 }
 
+impl<M1, M2> Monoid for (M1, M2)
+where
+    M1: Monoid,
+    M2: Monoid,
+{
+    type Set = (<M1 as Monoid>::Set, <M2 as Monoid>::Set);
+
+    const IS_COMMUTATIVE: bool = <M1 as Monoid>::IS_COMMUTATIVE & <M2 as Monoid>::IS_COMMUTATIVE;
+
+    fn identity() -> Self::Set {
+        (<M1 as Monoid>::identity(), <M2 as Monoid>::identity())
+    }
+
+    fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set {
+        (
+            <M1 as Monoid>::combine(&lhs_or_prev.0, &rhs_or_new.0),
+            <M2 as Monoid>::combine(&lhs_or_prev.1, &rhs_or_new.1),
+        )
+    }
+}
+
+impl<M1, M2, M3> Monoid for (M1, M2, M3)
+where
+    M1: Monoid,
+    M2: Monoid,
+    M3: Monoid,
+{
+    type Set = (
+        <M1 as Monoid>::Set,
+        <M2 as Monoid>::Set,
+        <M3 as Monoid>::Set,
+    );
+
+    const IS_COMMUTATIVE: bool = <M1 as Monoid>::IS_COMMUTATIVE
+        & <M2 as Monoid>::IS_COMMUTATIVE
+        & <M3 as Monoid>::IS_COMMUTATIVE;
+
+    fn identity() -> Self::Set {
+        (
+            <M1 as Monoid>::identity(),
+            <M2 as Monoid>::identity(),
+            <M3 as Monoid>::identity(),
+        )
+    }
+
+    fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set {
+        (
+            <M1 as Monoid>::combine(&lhs_or_prev.0, &rhs_or_new.0),
+            <M2 as Monoid>::combine(&lhs_or_prev.1, &rhs_or_new.1),
+            <M3 as Monoid>::combine(&lhs_or_prev.2, &rhs_or_new.2),
+        )
+    }
+}
+
 /// A **monoid action** is a function `*: M x S -> S` of a monoid `M` on a monoid `S`.
 ///
 /// # Low
