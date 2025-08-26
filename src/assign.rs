@@ -18,6 +18,9 @@ where
     /// `n.next_power_of_2()`
     buf_len: usize,
 
+    /// n
+    data_len: usize,
+
     // for debug
     query: PhantomData<Query>,
 }
@@ -29,15 +32,39 @@ where
 {
     const NULL_MAP_PTR: usize = !0;
 
-    // /// Returns the number og elements.
-    // ///
-    // /// # Time complexity
-    // ///
-    // /// *O*(1)
-    // #[allow(clippy::len_without_is_empty)]
-    // pub fn len(&self) -> usize {
-    //     self.lazy_ptr.len()
-    // }
+    /// Cheats a new instance initialized with n [`Monoid::identity()`]s.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(*N*)
+    pub fn new(n: usize) -> Self {
+        Self::from_iter(std::iter::repeat_n(<Query as Monoid>::identity(), n))
+    }
+
+    /// Returns the number of elements.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
+    #[allow(clippy::len_without_is_empty)]
+    pub fn len(&self) -> usize {
+        self.data_len
+    }
+
+    /// Returns an iterator over the elements
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(*N*)
+    pub fn iter(&mut self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
+        self.propagate_all();
+        self.data[self.buf_len..self.buf_len + self.data_len].iter()
+    }
+
+    #[inline]
+    fn inner_index(&self, i: usize) -> usize {
+        self.data_len + i
+    }
 
     /// Returns `[l, r)` on `self.data`.
     #[inline]
@@ -93,6 +120,7 @@ where
     /// # Panics
     ///
     /// Panics if the size of i-th segment is less than 2.
+    #[inline]
     fn recalculate_at(&mut self, i: usize) {
         self.data[i] = <Query as Monoid>::combine(&self.data[i << 1], &self.data[(i << 1) | 1])
     }
@@ -115,6 +143,10 @@ where
     {
         let [l, r] = self.inner_range(range);
         if l >= r {
+            return;
+        }
+        if l ^ r == 1 {
+            self.point_assign(l - self.buf_len, element);
             return;
         }
 
@@ -170,7 +202,32 @@ where
         }
     }
 
+    /// Assign the element to i-th node.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    pub fn point_assign(&mut self, i: usize, element: <Query as Monoid>::Set) {
+        let i = self.inner_index(i);
+
+        // lazy propagation in top-to-bottom order
+        for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
+            self.propagate_at(i >> d);
+        }
+
+        // assign new element
+        self.lazy_map.push(element);
+        self.push_map(i, self.lazy_map.len() - 1);
+
+        // recalculate data segments in bottom-to-top order
+        for d in i.trailing_zeros() + 1..usize::BITS - i.leading_zeros() {
+            self.recalculate_at(i >> d);
+        }
+    }
+
     /// Answers query for the given range.
+    ///
+    /// If the given range is empty, returns [`Monoid::identity()`].
     ///
     /// # Time complexity
     ///
@@ -180,6 +237,12 @@ where
         R: RangeBounds<usize>,
     {
         let [l, r] = self.inner_range(range);
+        if l >= r {
+            return <Query as Monoid>::identity();
+        }
+        if l ^ r == 1 {
+            return self.point_query(l - self.buf_len).clone();
+        }
 
         // lazy propagation in top-to-bottom order
         for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
@@ -207,6 +270,22 @@ where
 
         <Query as Monoid>::combine(&acc_l, &acc_r)
     }
+
+    /// Answers query for i-th element.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    pub fn point_query(&mut self, i: usize) -> &<Query as Monoid>::Set {
+        let i = self.inner_index(i);
+
+        // lazy propagation in top-to-bottom order
+        for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
+            self.propagate_at(i >> d);
+        }
+
+        &self.data[i]
+    }
 }
 
 impl<Query> From<Vec<<Query as Monoid>::Set>> for AssignSegmentTree<Query>
@@ -231,10 +310,46 @@ where
             lazy_ptr: vec![Self::NULL_MAP_PTR; (buf_len + n + 1) >> 1].into_boxed_slice(),
             lazy_map: Vec::with_capacity(buf_len + (n | 1).ilog2() as usize),
             buf_len,
+            data_len: n,
             query: PhantomData,
         };
         ast.recalculate_all();
         ast
+    }
+}
+
+impl<Query> FromIterator<<Query as Monoid>::Set> for AssignSegmentTree<Query>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Clone,
+{
+    fn from_iter<T: IntoIterator<Item = <Query as Monoid>::Set>>(iter: T) -> Self {
+        let iter = iter.into_iter();
+        let (min, max) = iter.size_hint();
+        if Some(min) == max {
+            let buf_len = min.next_power_of_two();
+
+            let data = Vec::from_iter(
+                std::iter::repeat_with(<Query as Monoid>::identity)
+                    .take(buf_len)
+                    .chain(iter)
+                    .chain(std::iter::repeat_with(<Query as Monoid>::identity).take(min & 1)),
+            )
+            .into_boxed_slice();
+
+            let mut ast = Self {
+                data,
+                lazy_ptr: vec![Self::NULL_MAP_PTR; (buf_len + min + 1) >> 1].into_boxed_slice(),
+                lazy_map: Vec::with_capacity(buf_len + (min | 1).ilog2() as usize),
+                buf_len,
+                data_len: min,
+                query: PhantomData,
+            };
+            ast.recalculate_all();
+            ast
+        } else {
+            Self::from(Vec::from_iter(iter))
+        }
     }
 }
 
@@ -253,6 +368,7 @@ where
             .finish()
     }
 }
+
 impl<Query> Clone for AssignSegmentTree<Query>
 where
     Query: Monoid,
@@ -264,6 +380,7 @@ where
             lazy_ptr: self.lazy_ptr.clone(),
             lazy_map: self.lazy_map.clone(),
             buf_len: self.buf_len.clone(),
+            data_len: self.data_len.clone(),
             query: self.query,
         }
     }
