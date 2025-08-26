@@ -253,3 +253,18 @@ where
             .finish()
     }
 }
+impl<Query> Clone for AssignSegmentTree<Query>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            data: self.data.clone(),
+            lazy_ptr: self.lazy_ptr.clone(),
+            lazy_map: self.lazy_map.clone(),
+            buf_len: self.buf_len.clone(),
+            query: self.query,
+        }
+    }
+}
