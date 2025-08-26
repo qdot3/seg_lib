@@ -9,6 +9,9 @@ pub use dual::DualSegmentTree;
 mod lazy;
 pub use lazy::LazySegmentTree;
 
+mod assign;
+pub use assign::AssignSegmentTree;
+
 mod beats;
 pub use beats::SegmentTreeBeats;
 
