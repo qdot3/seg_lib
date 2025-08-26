@@ -151,10 +151,10 @@ where
         // }
 
         // lazy propagation in top-to-bottom order
-        for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
+        for d in (l.trailing_zeros() + 1..=self.buf_len.trailing_zeros()).rev() {
             self.propagate_at(l >> d);
         }
-        for d in (r.trailing_zeros() + 1..usize::BITS - r.leading_zeros()).rev() {
+        for d in (r.trailing_zeros() + 1..=self.buf_len.trailing_zeros()).rev() {
             self.propagate_at((r - 1) >> d);
         }
 
@@ -189,10 +189,10 @@ where
 
         if self.lazy_map.len() < self.buf_len {
             // recalculate data segments in bottom-to-top order
-            for d in l.trailing_zeros() + 1..usize::BITS - l.leading_zeros() {
+            for d in l.trailing_zeros() + 1..=self.buf_len.trailing_zeros() {
                 self.recalculate_at(l >> d);
             }
-            for d in r.trailing_zeros() + 1..usize::BITS - r.leading_zeros() {
+            for d in r.trailing_zeros() + 1..=self.buf_len.trailing_zeros() {
                 self.recalculate_at((r - 1) >> d);
             }
         } else {
@@ -244,10 +244,10 @@ where
         // }
 
         // lazy propagation in top-to-bottom order
-        for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
+        for d in (l.trailing_zeros() + 1..=self.buf_len.trailing_zeros()).rev() {
             self.propagate_at(l >> d);
         }
-        for d in (r.trailing_zeros() + 1..usize::BITS - r.leading_zeros()).rev() {
+        for d in (r.trailing_zeros() + 1..=self.buf_len.trailing_zeros()).rev() {
             self.propagate_at((r - 1) >> d);
         }
 
