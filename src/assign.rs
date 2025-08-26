@@ -145,10 +145,10 @@ where
         if l >= r {
             return;
         }
-        if l ^ r == 1 {
-            self.point_assign(l - self.buf_len, element);
-            return;
-        }
+        // if l ^ r == 1 {
+        //     self.point_assign(l - self.buf_len, element);
+        //     return;
+        // }
 
         // lazy propagation in top-to-bottom order
         for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
@@ -239,9 +239,9 @@ where
         if l >= r {
             return <Query as Monoid>::identity();
         }
-        if l ^ r == 1 {
-            return self.point_query(l - self.buf_len).clone();
-        }
+        // if l ^ r == 1 {
+        //     return self.point_query(l - self.buf_len).clone();
+        // }
 
         // lazy propagation in top-to-bottom order
         for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
