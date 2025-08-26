@@ -43,6 +43,17 @@ where
         }
     }
 
+    /// Returns number of elements.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
+    #[allow(clippy::len_without_is_empty)]
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.data.len() / 2
+    }
+
     #[inline]
     fn inner_index(&self, i: usize) -> usize {
         self.data.len() / 2 + i
