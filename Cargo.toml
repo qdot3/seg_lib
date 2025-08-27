@@ -8,7 +8,7 @@ readme = "README.md"
 repository = "https://github.com/qdot3/seg_lib"
 
 license = "MIT OR Apache-2.0"
-keywords = ["segment tree"]
+keywords = ["segment_tree"]
 categories = ["data-structures"]
 
 [dependencies]
