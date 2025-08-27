@@ -154,10 +154,14 @@ where
 
         // lazy propagation in bottom-to-top order
         if !<Update as Monoid>::IS_COMMUTATIVE {
-            for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
+            let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
+            for d in (diff + 1..usize::BITS - l.leading_zeros()).rev() {
                 self.propagate_at(l >> d);
             }
-            for d in (r.trailing_zeros() + 1..usize::BITS - r.leading_zeros()).rev() {
+            for d in (l.trailing_zeros() + 1..=diff).rev() {
+                self.propagate_at(l >> d);
+            }
+            for d in (r.trailing_zeros() + 1..=diff).rev() {
                 self.propagate_at((r - 1) >> d);
             }
         }
@@ -229,12 +233,16 @@ where
         }
 
         // lazy propagation
-        for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
-            self.propagate_at(l >> d);
-        }
-        for d in (r.trailing_zeros() + 1..usize::BITS - r.leading_zeros()).rev() {
-            self.propagate_at((r - 1) >> d);
-        }
+            let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
+            for d in (diff + 1..usize::BITS - l.leading_zeros()).rev() {
+                self.propagate_at(l >> d);
+            }
+            for d in (l.trailing_zeros() + 1..=diff).rev() {
+                self.propagate_at(l >> d);
+            }
+            for d in (r.trailing_zeros() + 1..=diff).rev() {
+                self.propagate_at((r - 1) >> d);
+            }
 
         // reflect pending updates and combine segments
         let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
