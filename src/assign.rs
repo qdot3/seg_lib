@@ -375,6 +375,7 @@ where
             .field("lazy_ptr", &self.lazy_ptr)
             .field("lazy_map", &self.lazy_map)
             .field("buf_len", &self.buf_len)
+            .field("data_len", &self.data_len)
             .field("query", &self.query)
             .finish()
     }
