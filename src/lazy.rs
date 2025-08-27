@@ -185,11 +185,15 @@ where
         }
 
         // recalculate data segments in bottom-to-top order
-        for d in l.trailing_zeros() + 1..usize::BITS - l.leading_zeros() {
+        let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
+        for d in l.trailing_zeros() + 1..=diff {
             self.recalculate_at(l >> d);
         }
-        for d in r.trailing_zeros() + 1..usize::BITS - r.leading_zeros() {
+        for d in r.trailing_zeros() + 1..=diff {
             self.recalculate_at((r - 1) >> d);
+        }
+        for d in diff + 1..usize::BITS - l.leading_zeros() {
+            self.recalculate_at(l >> d);
         }
     }
 
@@ -233,16 +237,16 @@ where
         }
 
         // lazy propagation
-            let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
-            for d in (diff + 1..usize::BITS - l.leading_zeros()).rev() {
-                self.propagate_at(l >> d);
-            }
-            for d in (l.trailing_zeros() + 1..=diff).rev() {
-                self.propagate_at(l >> d);
-            }
-            for d in (r.trailing_zeros() + 1..=diff).rev() {
-                self.propagate_at((r - 1) >> d);
-            }
+        let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
+        for d in (diff + 1..usize::BITS - l.leading_zeros()).rev() {
+            self.propagate_at(l >> d);
+        }
+        for d in (l.trailing_zeros() + 1..=diff).rev() {
+            self.propagate_at(l >> d);
+        }
+        for d in (r.trailing_zeros() + 1..=diff).rev() {
+            self.propagate_at((r - 1) >> d);
+        }
 
         // reflect pending updates and combine segments
         let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
