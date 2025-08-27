@@ -1,0 +1,6 @@
+[book]
+authors = ["qdot3"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Segment Tree Library Book"
