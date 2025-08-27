@@ -151,14 +151,14 @@ where
         // }
 
         // lazy propagation in top-to-bottom order
-        let diff = usize::BITS - (l ^ (r - 1)).leading_zeros()+1;
-        for d in (diff..=self.buf_len.trailing_zeros()).rev() {
+        let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
+        for d in (diff + 1..=self.buf_len.trailing_zeros()).rev() {
             self.propagate_at(l >> d);
         }
-        for d in (l.trailing_zeros() + 1..diff).rev() {
+        for d in (l.trailing_zeros() + 1..=diff).rev() {
             self.propagate_at(l >> d);
         }
-        for d in (r.trailing_zeros() + 1..diff).rev() {
+        for d in (r.trailing_zeros() + 1..=diff).rev() {
             self.propagate_at((r - 1) >> d);
         }
 
@@ -193,11 +193,15 @@ where
 
         if self.lazy_map.len() < self.buf_len {
             // recalculate data segments in bottom-to-top order
-            for d in l.trailing_zeros() + 1..=self.buf_len.trailing_zeros() {
+            let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
+            for d in l.trailing_zeros() + 1..=diff {
                 self.recalculate_at(l >> d);
             }
-            for d in r.trailing_zeros() + 1..=self.buf_len.trailing_zeros() {
+            for d in r.trailing_zeros() + 1..=diff {
                 self.recalculate_at((r - 1) >> d);
+            }
+            for d in diff + 1..=self.buf_len.trailing_zeros() {
+                self.recalculate_at(l >> d);
             }
         } else {
             self.propagate_all();
@@ -248,10 +252,14 @@ where
         // }
 
         // lazy propagation in top-to-bottom order
-        for d in (l.trailing_zeros() + 1..=self.buf_len.trailing_zeros()).rev() {
+        let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
+        for d in (diff + 1..=self.buf_len.trailing_zeros()).rev() {
             self.propagate_at(l >> d);
         }
-        for d in (r.trailing_zeros() + 1..=self.buf_len.trailing_zeros()).rev() {
+        for d in (l.trailing_zeros() + 1..=diff).rev() {
+            self.propagate_at(l >> d);
+        }
+        for d in (r.trailing_zeros() + 1..=diff).rev() {
             self.propagate_at((r - 1) >> d);
         }
 
