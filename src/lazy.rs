@@ -1,6 +1,9 @@
 use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 
-use crate::traits::{Monoid, MonoidAction};
+use crate::{
+    lazy,
+    traits::{Monoid, MonoidAction},
+};
 
 /// A data structure that supports *range query range update* operations.
 pub struct LazySegmentTree<Query, Update>
@@ -68,13 +71,25 @@ where
         [self.inner_index(l), self.inner_index(r)]
     }
 
-    /// Evaluates pending updates of i-th segment.
-    fn eval(&mut self, i: usize) -> <Query as Monoid>::Set {
+    // /// Evaluates pending updates of i-th segment.
+    // fn eval(&mut self, i: usize) -> <Query as Monoid>::Set {
+    //     let size = self
+    //         .segment_size
+    //         .as_ref()
+    //         .map(|segment_size| segment_size.get(i).copied().unwrap_or(1));
+    //     <Update as MonoidAction>::act(&self.lazy[i], &self.data[i], size)
+    // }
+
+    fn push_map(&mut self, i: usize, update: &<Update as Monoid>::Set) {
         let size = self
             .segment_size
             .as_ref()
             .map(|segment_size| segment_size.get(i).copied().unwrap_or(1));
-        <Update as MonoidAction>::act(&self.lazy[i], &self.data[i], size)
+        self.data[i] = <Update as MonoidAction>::act(&self.lazy[i], &self.data[i], size);
+
+        if let Some(lazy) = self.lazy.get_mut(i) {
+            *lazy = <Update as Monoid>::combine(lazy, update)
+        }
     }
 
     /// Propagates pending [`Monoid::combine`] operations to the children.
@@ -82,12 +97,12 @@ where
     /// # Panics
     ///
     /// Panics if either of children does **not** exist.
-    fn propagate(&mut self, i: usize) {
-        self.data[i] = self.eval(i);
-
+    fn propagate_at(&mut self, i: usize) {
         let mapping = std::mem::replace(&mut self.lazy[i], <Update as Monoid>::identity());
-        self.lazy[i << 1] = <Update as Monoid>::combine(&self.lazy[i << 1], &mapping);
-        self.lazy[(i << 1) | 1] = <Update as Monoid>::combine(&self.lazy[(i << 1) | 1], &mapping);
+        self.push_map(i << 1, &mapping);
+        self.push_map((i << 1) | 1, &mapping);
+        // self.lazy[i << 1] = <Update as Monoid>::combine(&self.lazy[i << 1], &mapping);
+        // self.lazy[(i << 1) | 1] = <Update as Monoid>::combine(&self.lazy[(i << 1) | 1], &mapping);
     }
 
     /// Recalculates i-th data segments from the children.
@@ -96,8 +111,8 @@ where
     ///
     /// Panics if either of children does **not** exist.
     #[inline]
-    fn recalculate(&mut self, i: usize) {
-        self.data[i] = <Query as Monoid>::combine(&self.eval(i << 1), &self.eval((i << 1) | 1))
+    fn recalculate_at(&mut self, i: usize) {
+        self.data[i] = <Query as Monoid>::combine(&self.data[i << 1], &self.data[(i << 1) | 1])
     }
 
     /// Updates elements in the range using [`Monoid::combine()`].
@@ -119,10 +134,10 @@ where
         // lazy propagation in bottom-to-top order
         if !<Update as Monoid>::IS_COMMUTATIVE {
             for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
-                self.propagate(l >> d);
+                self.propagate_at(l >> d);
             }
             for d in (r.trailing_zeros() + 1..usize::BITS - r.leading_zeros()).rev() {
-                self.propagate((r - 1) >> d);
+                self.propagate_at((r - 1) >> d);
             }
         }
 
@@ -146,10 +161,10 @@ where
 
         // recalculate data segments in bottom-to-top order
         for d in l.trailing_zeros() + 1..usize::BITS - l.leading_zeros() {
-            self.recalculate(l >> d);
+            self.recalculate_at(l >> d);
         }
         for d in r.trailing_zeros() + 1..usize::BITS - r.leading_zeros() {
-            self.recalculate((r - 1) >> d);
+            self.recalculate_at((r - 1) >> d);
         }
     }
 
@@ -165,7 +180,7 @@ where
         // lazy propagation
         if !<Update as Monoid>::IS_COMMUTATIVE {
             for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
-                self.propagate(i >> d);
+                self.propagate_at(i >> d);
             }
         }
 
@@ -173,7 +188,7 @@ where
 
         // recalculate
         for d in i.trailing_zeros() + 1..usize::BITS - i.leading_zeros() {
-            self.recalculate(i >> d);
+            self.recalculate_at(i >> d);
         }
     }
 
@@ -194,10 +209,10 @@ where
 
         // lazy propagation
         for d in (l.trailing_zeros() + 1..usize::BITS - l.leading_zeros()).rev() {
-            self.propagate(l >> d);
+            self.propagate_at(l >> d);
         }
         for d in (r.trailing_zeros() + 1..usize::BITS - r.leading_zeros()).rev() {
-            self.propagate((r - 1) >> d);
+            self.propagate_at((r - 1) >> d);
         }
 
         // reflect pending updates and combine segments
@@ -205,12 +220,12 @@ where
         let [mut acc_l, mut acc_r] = [<Query as Monoid>::identity(), <Query as Monoid>::identity()];
         while {
             if l >= r {
-                acc_l = <Query as Monoid>::combine(&acc_l, &self.eval(l));
+                acc_l = <Query as Monoid>::combine(&acc_l, &self.data[l]);
                 l += 1;
                 l >>= l.trailing_zeros();
             } else {
                 r -= 1;
-                acc_r = <Query as Monoid>::combine(&self.eval(r), &acc_r);
+                acc_r = <Query as Monoid>::combine(&self.data[r], &acc_r);
                 r >>= r.trailing_zeros();
             }
 
@@ -230,7 +245,7 @@ where
 
         // lazy propagation
         for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
-            self.propagate(i >> d);
+            self.propagate_at(i >> d);
         }
 
         &self.data[i]
