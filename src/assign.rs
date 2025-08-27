@@ -58,6 +58,7 @@ where
     /// *O*(*N*)
     pub fn iter(&mut self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
         self.propagate_all();
+        self.recalculate_all();
         self.data[self.buf_len..self.buf_len + self.data_len].iter()
     }
 
