@@ -20,7 +20,7 @@ fn main() {
         if flag == 0 {
             input! { l: usize, r: usize, b: u64, c: u64, }
 
-            lst.range_update(l..r, [b, c]);
+            lst.range_update(l..r, &[b, c]);
         } else if flag == 1 {
             input! { l: usize, r: usize, }
 

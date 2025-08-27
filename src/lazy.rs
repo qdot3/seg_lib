@@ -142,7 +142,7 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn range_update<R>(&mut self, range: R, update: <Update as Monoid>::Set)
+    pub fn range_update<R>(&mut self, range: R, update: &<Update as Monoid>::Set)
     where
         R: RangeBounds<usize>,
     {
@@ -171,12 +171,12 @@ where
             let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
             while {
                 if l >= r {
-                    self.push_map(l, &update);
+                    self.push_map(l, update);
                     l += 1;
                     l >>= l.trailing_zeros();
                 } else {
                     r -= 1;
-                    self.push_map(r, &update);
+                    self.push_map(r, update);
                     r >>= r.trailing_zeros();
                 }
 
@@ -203,7 +203,7 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn point_update(&mut self, i: usize, update: <Update as Monoid>::Set) {
+    pub fn point_update(&mut self, i: usize, update: &<Update as Monoid>::Set) {
         let i = self.inner_index(i);
 
         // lazy propagation
@@ -213,7 +213,7 @@ where
             }
         }
 
-        self.push_map(i, &update);
+        self.push_map(i, update);
 
         // recalculate
         for d in i.trailing_zeros() + 1..usize::BITS - i.leading_zeros() {

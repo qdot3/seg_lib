@@ -101,13 +101,6 @@ pub trait MonoidAction {
 /// A function that behaves like a monoid action under well-defined conditions,
 /// which frequently hold in practice.
 ///
-/// # Low
-///
-/// ```text
-/// Σ_i f(a_i) = f(Σ_i a_i)    in most cases
-/// Σ_i f(a_i) ≠ f(Σ_i a_i)    in rare cases
-/// ```
-///
 /// See [`MonoidAction`] for details.
 pub trait QuasiMonoidAction {
     type Map: Monoid;
