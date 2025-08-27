@@ -67,7 +67,8 @@ monoid_tuple_impl!((M0, 0), (M1, 1), (M2, 2), (M3, 3),);
 /// # Low
 ///
 /// ```text
-/// Σ_i f(a_i) = f(Σ_i a_i)
+/// (f1 · f2) * a = f1 * (f2 * a)          ∀ f1, f2 ∈ Map, ∀ a ∈ Set
+/// f * (a1 · a2) = (f * a1) · (f * a2)    ∀ f ∈ Map, ∀ a1, a2 ∈ Set
 /// ```
 ///
 /// See [Monoid] for reference.
