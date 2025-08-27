@@ -43,6 +43,17 @@ where
         self.data.len() >> 1
     }
 
+    /// Returns an iterator over the elements
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(*N*)
+    pub fn iter(&mut self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
+        self.propagate_all();
+        self.recalculate_all();
+        self.data[self.data.len()..].iter()
+    }
+
     #[inline]
     fn inner_index(&self, i: usize) -> usize {
         self.data.len() / 2 + i
@@ -102,6 +113,12 @@ where
         // self.lazy[(i << 1) | 1] = <Update as Monoid>::combine(&self.lazy[(i << 1) | 1], &mapping);
     }
 
+    fn propagate_all(&mut self) {
+        for i in 1..self.data.len() >> 1 {
+            self.propagate_at(i);
+        }
+    }
+
     /// Recalculates i-th data segments from the children.
     ///
     /// # Panics
@@ -110,6 +127,13 @@ where
     #[inline]
     fn recalculate_at(&mut self, i: usize) {
         self.data[i] = <Query as Monoid>::combine(&self.data[i << 1], &self.data[(i << 1) | 1])
+    }
+
+    /// Recalculates all data segments.
+    fn recalculate_all(&mut self) {
+        for i in (1..self.data.len() >> 1).rev() {
+            self.recalculate_at(i);
+        }
     }
 
     /// Updates elements in the range using [`Monoid::combine()`].
@@ -257,15 +281,12 @@ where
     fn from(values: Vec<<Query as Monoid>::Set>) -> Self {
         let n = values.len();
 
-        let mut data = Vec::from_iter(
+        let data = Vec::from_iter(
             std::iter::repeat_with(<Query as Monoid>::identity)
                 .take(n)
                 .chain(values),
         )
         .into_boxed_slice();
-        for i in (1..n).rev() {
-            data[i] = <Query as Monoid>::combine(&data[i << 1], &data[(i << 1) | 1])
-        }
 
         let lazy =
             Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(n << 1))
@@ -282,13 +303,15 @@ where
             segment_size.into_boxed_slice()
         });
 
-        Self {
+        let mut lst = Self {
             data,
             lazy,
             segment_size,
             query: PhantomData,
             update: PhantomData,
-        }
+        };
+        lst.recalculate_all();
+        lst
     }
 }
 
@@ -301,15 +324,12 @@ where
         let iter = iter.into_iter();
         let (min, max) = iter.size_hint();
         if Some(min) == max {
-            let mut data = Vec::from_iter(
+            let data = Vec::from_iter(
                 std::iter::repeat_with(<Query as Monoid>::identity)
                     .take(min)
                     .chain(iter),
             )
             .into_boxed_slice();
-            for i in (1..min).rev() {
-                data[i] = <Query as Monoid>::combine(&data[i << 1], &data[(i << 1) | 1])
-            }
 
             let lazy =
                 Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(min << 1))
@@ -326,13 +346,15 @@ where
                 segment_size.into_boxed_slice()
             });
 
-            Self {
+            let mut lst = Self {
                 data,
                 lazy,
                 segment_size,
                 query: PhantomData,
                 update: PhantomData,
-            }
+            };
+            lst.recalculate_all();
+            lst
         } else {
             Vec::from_iter(iter).into()
         }
