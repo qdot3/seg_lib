@@ -2,7 +2,7 @@ use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 
 use crate::traits::Monoid;
 
-/// A data structure that supports *range query point update* operations.
+/// A data structure that supports **range query point update** operations.
 pub struct SegmentTree<Query>
 where
     Query: Monoid,
@@ -51,7 +51,16 @@ where
     #[allow(clippy::len_without_is_empty)]
     #[inline]
     pub fn len(&self) -> usize {
-        self.data.len() / 2
+        self.data.len() >> 1
+    }
+
+    /// Returns an iterator over the elements
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(*N*)
+    pub fn iter(&self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
+        self.data[self.data.len() >> 1..].iter()
     }
 
     #[inline]

@@ -2,7 +2,7 @@ use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 
 use crate::traits::Monoid;
 
-/// A data structure that supports *point query range update* operations.
+/// A data structure that supports **point query range update** operations.
 pub struct DualSegmentTree<Update>
 where
     Update: Monoid,
@@ -26,6 +26,27 @@ where
             data,
             update: PhantomData,
         }
+    }
+
+    /// Returns number of elements.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
+    #[allow(clippy::len_without_is_empty)]
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.data.len() >> 1
+    }
+
+    /// Returns an iterator over the elements
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(*N*)
+    pub fn iter(&mut self) -> std::slice::Iter<'_, <Update as Monoid>::Set> {
+        self.propagate_all();
+        self.data[self.data.len() >> 1..].iter()
     }
 
     #[inline]
@@ -58,7 +79,7 @@ where
     /// # Panics
     ///
     /// Panics if either of children does **not** exist.
-    fn propagate(&mut self, i: usize) {
+    fn propagate_at(&mut self, i: usize) {
         assert!(
             self.data.len() >= (i << 1) + 2,
             "{i}-th node should have two children",
@@ -71,6 +92,12 @@ where
         // let children = &mut self.data[i << 1..(i << 1) + 2];
         // children[0] = <Update as Monoid>::combine(&lazy, &children[0]);
         // children[1] = <Update as Monoid>::combine(&lazy, &children[1]);
+    }
+
+    fn propagate_all(&mut self) {
+        for i in 1..self.data.len() >> 1 {
+            self.propagate_at(i);
+        }
     }
 
     /// Returns `i`-th element.
@@ -117,7 +144,7 @@ where
         // lazy propagation in top-to-bottom order
         if !<Update as Monoid>::IS_COMMUTATIVE {
             for d in (1..usize::BITS - i.leading_zeros()).rev() {
-                self.propagate(i >> d);
+                self.propagate_at(i >> d);
             }
         }
 
@@ -149,10 +176,10 @@ where
         // lazy propagation in top-to-bottom order
         if !<Update as Monoid>::IS_COMMUTATIVE {
             for d in (1..usize::BITS - l.leading_zeros()).rev() {
-                self.propagate(l >> d);
+                self.propagate_at(l >> d);
             }
             for d in (1..usize::BITS - r.leading_zeros()).rev() {
-                self.propagate(r >> d);
+                self.propagate_at(r >> d);
             }
         }
 

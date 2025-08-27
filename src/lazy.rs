@@ -2,7 +2,7 @@ use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 
 use crate::traits::{Monoid, MonoidAction};
 
-/// A data structure that supports *range query range update* operations.
+/// A data structure that supports **range query range update** operations.
 pub struct LazySegmentTree<Query, Update>
 where
     Query: Monoid,
@@ -93,7 +93,7 @@ where
             .segment_size
             .as_ref()
             .map(|segment_size| segment_size.get(i).copied().unwrap_or(1));
-        self.data[i] = <Update as MonoidAction>::act(&update, &self.data[i], size);
+        self.data[i] = <Update as MonoidAction>::act(update, &self.data[i], size);
 
         if let Some(lazy) = self.lazy.get_mut(i) {
             *lazy = <Update as Monoid>::combine(lazy, update)
