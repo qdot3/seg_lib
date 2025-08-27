@@ -143,12 +143,12 @@ where
             let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
             while {
                 if l >= r {
-                    self.lazy[l] = <Update as Monoid>::combine(&self.lazy[l], &update);
+                    self.push_map(l, &update);
                     l += 1;
                     l >>= l.trailing_zeros();
                 } else {
                     r -= 1;
-                    self.lazy[r] = <Update as Monoid>::combine(&self.lazy[r], &update);
+                    self.push_map(r, &update);
                     r >>= r.trailing_zeros();
                 }
 
@@ -181,7 +181,7 @@ where
             }
         }
 
-        self.lazy[i] = <Update as Monoid>::combine(&self.lazy[i], &update);
+        self.push_map(i, &update);
 
         // recalculate
         for d in i.trailing_zeros() + 1..usize::BITS - i.leading_zeros() {
