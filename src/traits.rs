@@ -10,6 +10,7 @@
 /// ```
 ///
 /// where `·` is the binary operation and `e` is the identity element.
+// ANCHOR: monoid_trait
 pub trait Monoid {
     type Set;
 
@@ -34,6 +35,7 @@ pub trait Monoid {
     /// If the operation is **not** commutative, the position of the arguments matters.
     fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set;
 }
+// ANCHOR_END: monoid_trait
 
 macro_rules! monoid_tuple_impl {
     ( $( ($ty_names:ident, $indexes:tt), )* ) => {
@@ -69,6 +71,7 @@ monoid_tuple_impl!((M0, 0), (M1, 1), (M2, 2), (M3, 3),);
 /// ```
 ///
 /// See [Monoid] for reference.
+// ANCHOR: monoid_action_trait
 pub trait MonoidAction {
     type Map: Monoid;
     type Set: Monoid;
@@ -92,6 +95,7 @@ pub trait MonoidAction {
         size: Option<usize>,
     ) -> <Self::Set as Monoid>::Set;
 }
+// ANCHOR_END: monoid_action_trait
 
 /// A function that behaves like a monoid action under well-defined conditions,
 /// which frequently hold in practice.

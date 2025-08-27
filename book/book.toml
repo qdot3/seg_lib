@@ -1,6 +1,17 @@
 [book]
 authors = ["qdot3"]
-language = "en"
+language = "ja"
 multilingual = false
 src = "src"
 title = "Segment Tree Library Book"
+
+[output.html]
+default-theme = "light"
+additional-css = ["./mdbook-admonish.css"]
+
+[preprocessor.katex]
+after = ["links"]
+
+[preprocessor.admonish]
+command = "mdbook-admonish"
+assets_version = "3.1.0" # do not edit: managed by `mdbook-admonish install`
