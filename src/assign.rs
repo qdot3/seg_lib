@@ -120,7 +120,6 @@ where
     /// # Panics
     ///
     /// Panics if the size of i-th segment is less than 2.
-    #[inline]
     fn recalculate_at(&mut self, i: usize) {
         self.data[i] = <Query as Monoid>::combine(&self.data[i << 1], &self.data[(i << 1) | 1])
     }
@@ -391,8 +390,8 @@ where
             data: self.data.clone(),
             lazy_ptr: self.lazy_ptr.clone(),
             lazy_map: self.lazy_map.clone(),
-            buf_len: self.buf_len.clone(),
-            data_len: self.data_len.clone(),
+            buf_len: self.buf_len,
+            data_len: self.data_len,
             query: self.query,
         }
     }
