@@ -40,7 +40,7 @@ impl<const MOD: u64> Monoid for ModAffine<MOD> {
         [1, 0]
     }
 
-    fn combine(lhs: &Self::Set, rhs: &Self::Set) -> Self::Set {
-        [lhs[0] * rhs[0] % MOD, (lhs[0] * rhs[1] + lhs[1]) % MOD]
+    fn combine(prev: &Self::Set, new: &Self::Set) -> Self::Set {
+        [new[0] * prev[0] % MOD, (new[0] * prev[1] + new[1]) % MOD]
     }
 }
