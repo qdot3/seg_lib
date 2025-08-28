@@ -53,11 +53,15 @@ where
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.range.len()
+    }
+
     /// Replaces i-th element with given `element`.
     ///
     /// # Time complexity
     ///
-    /// *O*(log *N*)
+    /// *O*(log *Q*)
     pub fn point_update(&mut self, mut i: isize, mut element: <Query as Monoid>::Set) {
         if self.data.is_empty() {
             self.data.push(Node::new(i, element));
@@ -138,7 +142,7 @@ where
     ///
     /// # Time complexity
     ///
-    /// *O*(log *N*)
+    /// *O*(log *Q*)
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<isize>,
@@ -306,7 +310,7 @@ where
 impl<Query> Debug for DynamicSegmentTree<Query>
 where
     Query: Monoid,
-    <Query as Monoid>::Set: Debug
+    <Query as Monoid>::Set: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DynamicSegmentTree")
@@ -318,7 +322,22 @@ where
     }
 }
 
-#[derive(Debug)]
+impl<Query> Clone for DynamicSegmentTree<Query>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            data: self.data.clone(),
+            range: self.range.clone(),
+            reusable_stack: self.reusable_stack.clone(),
+            query: self.query,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 struct Node<T> {
     index: isize,
     element: T,

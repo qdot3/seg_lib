@@ -89,9 +89,9 @@ where
             "{i}-th node should have two children",
         );
 
-        let lazy = std::mem::replace(&mut self.data[i], <Update as Monoid>::identity());
-        self.data[i << 1] = <Update as Monoid>::combine(&lazy, &self.data[i << 1]);
-        self.data[(i << 1) | 1] = <Update as Monoid>::combine(&lazy, &self.data[(i << 1) | 1]);
+        let update = std::mem::replace(&mut self.data[i], <Update as Monoid>::identity());
+        self.data[i << 1] = <Update as Monoid>::combine(&self.data[i << 1], &update);
+        self.data[(i << 1) | 1] = <Update as Monoid>::combine(&self.data[(i << 1) | 1], &update);
 
         // let children = &mut self.data[i << 1..(i << 1) + 2];
         // children[0] = <Update as Monoid>::combine(&lazy, &children[0]);
@@ -139,12 +139,12 @@ where
         let [mut l, mut r] = [l, r];
         while {
             if l >= r {
-                self.data[l] = <Update as Monoid>::combine(update, &self.data[l]);
+                self.data[l] = <Update as Monoid>::combine(&self.data[l], update);
                 l += 1;
                 l >>= l.trailing_zeros();
             } else {
                 r -= 1;
-                self.data[r] = <Update as Monoid>::combine(update, &self.data[r]);
+                self.data[r] = <Update as Monoid>::combine(&self.data[r], update);
                 r >>= r.trailing_zeros()
             }
 
@@ -171,7 +171,7 @@ where
             }
         }
 
-        self.data[i] = <Update as Monoid>::combine(update, &self.data[i]);
+        self.data[i] = <Update as Monoid>::combine(&self.data[i], update);
     }
 
     /// Returns `i`-th element.
