@@ -26,6 +26,7 @@ impl<Query> DynamicSegmentTree<Query>
 where
     Query: Monoid,
 {
+    #[must_use]
     pub fn new(range: Range<isize>) -> Option<Self> {
         if range.is_empty() {
             None
@@ -39,6 +40,7 @@ where
         }
     }
 
+    #[must_use]
     pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
         if range.is_empty() {
             None
@@ -52,6 +54,9 @@ where
         }
     }
 
+    #[inline]
+    #[allow(clippy::len_without_is_empty)]
+    #[must_use]
     pub fn len(&self) -> usize {
         self.range.len()
     }
@@ -142,6 +147,7 @@ where
     /// # Time complexity
     ///
     /// *O*(log *Q*)
+    #[must_use]
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<isize>,
@@ -348,6 +354,7 @@ struct Node<T> {
 }
 
 impl<T> Node<T> {
+    #[inline]
     fn new(index: isize, element: T) -> Self {
         Self {
             index,
@@ -375,6 +382,7 @@ impl<T> Node<T> {
     }
 
     /// Invalid `ptr` will be ignored.
+    #[inline]
     fn set_right_ptr(&mut self, ptr: usize) {
         self.right_ptr = NonZeroUsize::new(ptr)
     }

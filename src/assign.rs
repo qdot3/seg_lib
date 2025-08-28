@@ -37,6 +37,7 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
+    #[must_use]
     pub fn new(n: usize) -> Self {
         Self::from_iter(std::iter::repeat_n(<Query as Monoid>::identity(), n))
     }
@@ -48,6 +49,7 @@ where
     /// *O*(1)
     #[allow(clippy::len_without_is_empty)]
     #[inline]
+    #[must_use]
     pub fn len(&self) -> usize {
         self.data_len
     }
@@ -57,6 +59,7 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
+    #[must_use]
     pub fn iter(&mut self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
         self.propagate_all();
         self.recalculate_all();
@@ -240,6 +243,7 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    #[must_use]
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<usize>,
@@ -288,6 +292,7 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    #[must_use]
     pub fn point_query(&mut self, i: usize) -> &<Query as Monoid>::Set {
         let i = self.inner_index(i);
 
