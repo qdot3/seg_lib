@@ -1,6 +1,17 @@
 # seg_lib
 
+[![crates.io](https://img.shields.io/crates/v/seg_lib.svg)](https://crates.io/crates/seg_lib)
+[![docs.rs](https://docs.rs/seg_lib/badge.svg)](https://docs.rs/seg_lib)
+
 A collection of segment tree variants.
+
+## Usage
+
+Run this command:
+
+```text
+cargo add seg_lib
+```
 
 ## License
 
