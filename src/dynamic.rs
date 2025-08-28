@@ -208,7 +208,7 @@ where
                 res = if ptr <= usize::MAX >> 1 {
                     <Query as Monoid>::combine(self.data[ptr].get_element(), &res)
                 } else {
-                    <Query as Monoid>::combine(&res, self.data[ptr].get_element())
+                    <Query as Monoid>::combine(&res, self.data[!ptr].get_element())
                 }
             }
             return res;
@@ -298,7 +298,7 @@ where
             res = if ptr <= usize::MAX >> 1 {
                 <Query as Monoid>::combine(self.data[ptr].get_element(), &res)
             } else {
-                <Query as Monoid>::combine(&res, self.data[ptr].get_element())
+                <Query as Monoid>::combine(&res, self.data[!ptr].get_element())
             }
         }
 
