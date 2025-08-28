@@ -26,6 +26,11 @@ impl<Query> DynamicSegmentTree<Query>
 where
     Query: Monoid,
 {
+    /// Creates a new instance initialized with [identity elements](crate::traits::Monoid::identity()).
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
     #[inline]
     #[must_use]
     pub fn new(range: Range<isize>) -> Option<Self> {
@@ -41,6 +46,12 @@ where
         }
     }
 
+    /// Creates a new instance initialized with [identity elements](crate::traits::Monoid::identity())
+    /// with at least specified `capacity`.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
     #[inline]
     #[must_use]
     pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
@@ -56,6 +67,11 @@ where
         }
     }
 
+    /// Returns the number of elements.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
     #[inline]
     #[allow(clippy::len_without_is_empty)]
     #[must_use]
@@ -200,29 +216,11 @@ where
             }
         }
 
+        // Step 2
         let p_ptr = p_ptr;
         let [start, end] = [start, end];
         let mid = start.midpoint(end);
 
-        // // Step 2-1: r <= mid || mid <= l
-        // if (l >= mid && self.data[p_ptr].get_right_ptr().is_none())
-        //     || (r <= mid && self.data[p_ptr].get_left_ptr().is_none())
-        // {
-        //     let mut res = <Query as Monoid>::identity();
-        //     if (l..r).contains(&self.data[p_ptr].index) {
-        //         res = <Query as Monoid>::combine(self.data[p_ptr].get_element(), &res)
-        //     }
-        //     while let Some(ptr) = self.reusable_stack.pop() {
-        //         res = if ptr <= usize::MAX >> 1 {
-        //             <Query as Monoid>::combine(self.data[ptr].get_element(), &res)
-        //         } else {
-        //             <Query as Monoid>::combine(&res, self.data[!ptr].get_element())
-        //         }
-        //     }
-        //     return res;
-        // }
-
-        // Step 2-2: l < mid < r
         // (a) l <= i < mid
         let mut res = <Query as Monoid>::identity();
         if let Some(mut p_ptr) = self.data[p_ptr].get_left_ptr() {
@@ -261,7 +259,7 @@ where
             }
         }
 
-        // (b)
+        // (b) self
         if (l..r).contains(&self.data[p_ptr].index) {
             res = <Query as Monoid>::combine(&res, self.data[p_ptr].get_element());
         }

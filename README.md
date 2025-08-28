@@ -14,6 +14,17 @@ Run this command in your project directory:
 cargo add seg_lib
 ```
 
+## Guide
+
+|                        | range query | range update | comments                            |
+| ---------------------- | ----------- | ------------ | ----------------------------------- |
+| [`SegmentTree`]        | ✅           | ❌            |                                     |
+| [`DynamicSegmentTree`] | ✅           | ❌            | large array                         |
+| [`DualSegmentTree`]    | ❌           | ✅            |                                     |
+| [`LazySegmentTree`]    | ✅           | ✅            |                                     |
+| [`AssignSegmentTree`]  | ✅           | ✅            | specialized for range assign update |
+| [`SegmentTreeBeats`]   | ✅           | ✅            | UNDER CONSTRUCTION                  |
+
 ## License
 
 Licensed under either of
