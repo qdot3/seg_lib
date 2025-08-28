@@ -1,9 +1,9 @@
 [package]
 name = "seg_lib"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 
-description = "collection of segment tree variants"
+description = "A collection of segment tree variants"
 readme = "README.md"
 repository = "https://github.com/qdot3/seg_lib"
 

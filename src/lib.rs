@@ -20,7 +20,17 @@
 //! assert_eq!(seg_tree.range_query(..), 999 * 1_000 / 2 + 110)
 //! ```
 //!
-//! See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples)
+//! See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
+//!
+//! # Guide
+//!
+//! |                        | range query | range update | comments |
+//! |------------------------|-------------|--------------|----------|
+//! | [`SegmentTree`]        | ✅ | ❌ | |
+//! | [`DualSegmentTree`]    | ❌ | ✅ | |
+//! | [`LazySegmentTree`]    | ✅ | ✅ | |
+//! | [`AssignSegmentTree`]  | ✅ | ✅ | specialized for range assign update |
+//! | [`SegmentTreeBeats`]   | ✅ | ✅ | UNDER CONSTRUCTION |
 
 mod normal;
 pub use normal::SegmentTree;
