@@ -32,7 +32,7 @@ where
 {
     const NULL_MAP_PTR: usize = !0;
 
-    /// Cheats a new instance initialized with n [`Monoid::identity()`]s.
+    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
     ///
     /// # Time complexity
     ///
@@ -47,6 +47,7 @@ where
     ///
     /// *O*(1)
     #[allow(clippy::len_without_is_empty)]
+    #[inline]
     pub fn len(&self) -> usize {
         self.data_len
     }
@@ -234,7 +235,7 @@ where
 
     /// Answers query for the given range.
     ///
-    /// If the given range is empty, returns [`Monoid::identity()`].
+    /// If the given range is empty, returns [the identity element](crate::traits::Monoid::identity()).
     ///
     /// # Time complexity
     ///

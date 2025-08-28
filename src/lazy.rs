@@ -23,7 +23,7 @@ where
     Query: Monoid,
     Update: Monoid + MonoidAction<Map = Update, Set = Query>,
 {
-    /// Cheats an instance initialized with `n` [`Monoid::identity()`]s.
+    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
     ///
     /// # Time complexity
     ///
@@ -136,7 +136,7 @@ where
         }
     }
 
-    /// Updates elements in the range using [`Monoid::combine()`].
+    /// Updates elements in the range using [predefined binary operation](crate::traits::Monoid::combine()).
     /// More precisely, `a[i] <- update · a[i], i ∈ range`
     ///
     /// # Time complexity
@@ -197,7 +197,7 @@ where
         }
     }
 
-    /// Updates i-th element in the range using [`Monoid::combine()`].
+    /// Updates i-th element using [predefined binary operation](crate::traits::Monoid::combine()).
     /// More precisely, `a[i] <- update · a[i]`.
     ///
     /// # Time complexity
@@ -221,7 +221,9 @@ where
         }
     }
 
-    /// Answers the query for the given range.
+    /// Answers query for the given range.
+    ///
+    /// If the given range is empty, returns [the identity element](crate::traits::Monoid::identity()).
     ///
     /// # Time complexity
     ///
@@ -268,7 +270,7 @@ where
         <Query as Monoid>::combine(&acc_l, &acc_r)
     }
 
-    /// Answers the query for i-th element.
+    /// Answers query for i-th element.
     ///
     /// # Time complexity
     ///

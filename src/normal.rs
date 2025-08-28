@@ -20,7 +20,7 @@ impl<Query> SegmentTree<Query>
 where
     Query: Monoid,
 {
-    /// Creates an instance initialized with `n` [`Monoid::identity`]s.
+    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
     ///
     /// # Example
     ///
@@ -43,7 +43,7 @@ where
         }
     }
 
-    /// Returns number of elements.
+    /// Returns the number of elements.
     ///
     /// # Time complexity
     ///
@@ -88,7 +88,7 @@ where
         [self.inner_index(l), self.inner_index(r)]
     }
 
-    /// Replacing i-th data with `update`.
+    /// Replaces i-th element with `update`.
     ///
     /// # Time complexity
     ///
@@ -102,7 +102,7 @@ where
         }
     }
 
-    /// Updates i-th element using `f`.
+    /// Replaces i-th element using `f`.
     ///
     /// # Time complexity
     ///
@@ -119,17 +119,9 @@ where
         }
     }
 
-    /// Returns a shared reference of i-th data.
+    /// Answers query for the given range.
     ///
-    /// # Time complexity
-    ///
-    /// *O*(1)
-    pub fn point_query(&self, i: usize) -> &<Query as Monoid>::Set {
-        let i = self.inner_index(i);
-        &self.data[i]
-    }
-
-    /// Answers the query for the given range.
+    /// If the given range is empty, returns [the identity element](crate::traits::Monoid::identity()).
     ///
     /// # Time complexity
     ///
@@ -164,6 +156,16 @@ where
         } {}
 
         <Query as Monoid>::combine(&acc_l, &acc_r)
+    }
+
+    /// Answers query for i-th element.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
+    pub fn point_query(&self, i: usize) -> &<Query as Monoid>::Set {
+        let i = self.inner_index(i);
+        &self.data[i]
     }
 }
 

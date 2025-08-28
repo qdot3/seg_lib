@@ -16,7 +16,11 @@ impl<Update> DualSegmentTree<Update>
 where
     Update: Monoid,
 {
-    /// Creates a new instance initialized with `n` [`Monoid::identity`]s.
+    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(*N*)
     pub fn new(n: usize) -> Self {
         let data =
             Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(n << 1))
@@ -28,7 +32,7 @@ where
         }
     }
 
-    /// Returns number of elements.
+    /// Returns the number of elements.
     ///
     /// # Time complexity
     ///
@@ -100,58 +104,7 @@ where
         }
     }
 
-    /// Returns `i`-th element.
-    ///
-    /// # Time complexity
-    ///
-    /// *O*(log *N*)
-    pub fn point_query(&self, i: usize) -> <Update as Monoid>::Set {
-        let mut i = self.inner_index(i);
-        let mut res = <Update as Monoid>::identity();
-        // combine in chronological order
-        while i > 0 {
-            res = <Update as Monoid>::combine(&self.data[i], &res);
-            i >>= 1;
-        }
-
-        res
-    }
-
-    /// Returns modified i-th element using `f`.
-    ///
-    /// # Time complexity
-    ///
-    /// *O*(log *N*)
-    pub fn point_query_with<F, T>(&self, i: usize, f: F) -> T
-    where
-        F: FnOnce(<Update as Monoid>::Set) -> T,
-    {
-        f(self.point_query(i))
-    }
-
-    /// Updates `i`-th element using [`Monoid::combine`].
-    /// More precisely, `a[i] <- update · a[i]`
-    ///
-    /// # Time complexity
-    ///
-    /// | [`Monoid::IS_COMMUTATIVE`] | time         |
-    /// |----------------------------|--------------|
-    /// | [`true`]                   | *O*(1)       |
-    /// | [`false`]                  | *O*(log *N*) |
-    pub fn point_update(&mut self, i: usize, update: &<Update as Monoid>::Set) {
-        let i = self.inner_index(i);
-
-        // lazy propagation in top-to-bottom order
-        if !<Update as Monoid>::IS_COMMUTATIVE {
-            for d in (1..usize::BITS - i.leading_zeros()).rev() {
-                self.propagate_at(i >> d);
-            }
-        }
-
-        self.data[i] = <Update as Monoid>::combine(update, &self.data[i]);
-    }
-
-    /// Updates elements in the range using [`Monoid::combine()`].
+    /// Updates elements in the range using [predefined binary operation](crate::traits::Monoid::combine()).
     /// More precisely, `a[i] <- update · a[i], i ∈ range`
     ///
     /// # Time complexity
@@ -197,6 +150,57 @@ where
 
             l != r
         } {}
+    }
+
+    /// Updates `i`-th element using [predefined binary operation](crate::traits::Monoid::combine()).
+    /// More precisely, `a[i] <- update · a[i]`
+    ///
+    /// # Time complexity
+    ///
+    /// | [commutativity](crate::traits::Monoid::IS_COMMUTATIVE) | time         |
+    /// |--------------------------------------------------------|--------------|
+    /// | [`true`]                                               | *O*(1)       |
+    /// | [`false`]                                              | *O*(log *N*) |
+    pub fn point_update(&mut self, i: usize, update: &<Update as Monoid>::Set) {
+        let i = self.inner_index(i);
+
+        // lazy propagation in top-to-bottom order
+        if !<Update as Monoid>::IS_COMMUTATIVE {
+            for d in (1..usize::BITS - i.leading_zeros()).rev() {
+                self.propagate_at(i >> d);
+            }
+        }
+
+        self.data[i] = <Update as Monoid>::combine(update, &self.data[i]);
+    }
+
+    /// Returns `i`-th element.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    pub fn point_query(&self, i: usize) -> <Update as Monoid>::Set {
+        let mut i = self.inner_index(i);
+        let mut res = <Update as Monoid>::identity();
+        // combine in chronological order
+        while i > 0 {
+            res = <Update as Monoid>::combine(&self.data[i], &res);
+            i >>= 1;
+        }
+
+        res
+    }
+
+    /// Returns modified i-th element using `f`.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    pub fn point_query_with<F, T>(&self, i: usize, f: F) -> T
+    where
+        F: FnOnce(<Update as Monoid>::Set) -> T,
+    {
+        f(self.point_query(i))
     }
 }
 
