@@ -26,6 +26,7 @@ impl<Query> DynamicSegmentTree<Query>
 where
     Query: Monoid,
 {
+    #[inline]
     #[must_use]
     pub fn new(range: Range<isize>) -> Option<Self> {
         if range.is_empty() {
@@ -40,6 +41,7 @@ where
         }
     }
 
+    #[inline]
     #[must_use]
     pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
         if range.is_empty() {
@@ -164,7 +166,7 @@ where
             std::ops::Bound::Unbounded => end,
         };
 
-        if l >= r {
+        if l >= r || self.data.is_empty() {
             return <Query as Monoid>::identity();
         }
 
