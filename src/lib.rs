@@ -1,36 +1,38 @@
-//! `seg_lib` provides segment tree variants.
-//!
-//! # Example
-//!
-//! ```rust
-//! use seg_lib::{SegmentTree, ops::Add};
-//!
-//! // point update range sum query
-//! let mut seg_tree = SegmentTree::<Add<i32>>::from_iter(0..1_000);
-//!
-//! assert_eq!(seg_tree.range_query(..), 999 * 1_000 / 2);
-//!
-//! // replace 0-th element with 100
-//! seg_tree.point_update(0, 100);
-//! assert_eq!(seg_tree.point_query(0), &100);
-//!
-//! // twice 10-th element
-//! seg_tree.point_update_with(10, |v| v * 2);
-//! assert_eq!(seg_tree.point_query(10), &20);
-//! assert_eq!(seg_tree.range_query(..), 999 * 1_000 / 2 + 110)
-//! ```
-//!
-//! See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
-//!
-//! # Guide
-//!
-//! |                        | range query | range update | comments |
-//! |------------------------|-------------|--------------|----------|
-//! | [`SegmentTree`]        | ✅ | ❌ | |
-//! | [`DualSegmentTree`]    | ❌ | ✅ | |
-//! | [`LazySegmentTree`]    | ✅ | ✅ | |
-//! | [`AssignSegmentTree`]  | ✅ | ✅ | specialized for range assign update |
-//! | [`SegmentTreeBeats`]   | ✅ | ✅ | UNDER CONSTRUCTION |
+/*!
+`seg_lib` provides segment tree variants.
+
+# Example
+
+```rust
+use seg_lib::{SegmentTree, ops::Add};
+
+// point update range sum query
+let mut seg_tree = SegmentTree::<Add<i32>>::from_iter(0..1_000);
+
+assert_eq!(seg_tree.range_query(..), 999 * 1_000 / 2);
+
+// replace 0-th element with 100
+seg_tree.point_update(0, 100);
+assert_eq!(seg_tree.point_query(0), &100);
+
+// twice 10-th element
+seg_tree.point_update_with(10, |v| v * 2);
+assert_eq!(seg_tree.point_query(10), &20);
+assert_eq!(seg_tree.range_query(..), 999 * 1_000 / 2 + 110)
+```
+
+See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
+
+# Guide
+
+|                        | range query | range update | comments |
+|------------------------|-------------|--------------|----------|
+| [`SegmentTree`]        | ✅ | ❌ | |
+| [`DualSegmentTree`]    | ❌ | ✅ | |
+| [`LazySegmentTree`]    | ✅ | ✅ | |
+| [`AssignSegmentTree`]  | ✅ | ✅ | specialized for range assign update |
+| [`SegmentTreeBeats`]   | ✅ | ✅ | UNDER CONSTRUCTION |
+*/
 
 mod normal;
 pub use normal::SegmentTree;
