@@ -23,7 +23,6 @@ cargo add seg_lib
 | [`DualSegmentTree`]    | ❌           | ✅            |                                     |
 | [`LazySegmentTree`]    | ✅           | ✅            |                                     |
 | [`AssignSegmentTree`]  | ✅           | ✅            | specialized for range assign update |
-| [`SegmentTreeBeats`]   | ✅           | ✅            | UNDER CONSTRUCTION                  |
 
 ## License
 

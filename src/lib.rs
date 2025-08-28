@@ -32,7 +32,6 @@ See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
 | [`DualSegmentTree`]    | ❌ | ✅ | |
 | [`LazySegmentTree`]    | ✅ | ✅ | |
 | [`AssignSegmentTree`]  | ✅ | ✅ | specialized for range assign update |
-| [`SegmentTreeBeats`]   | ✅ | ✅ | UNDER CONSTRUCTION |
 */
 
 mod normal;
@@ -48,7 +47,7 @@ mod assign;
 pub use assign::AssignSegmentTree;
 
 mod beats;
-pub use beats::SegmentTreeBeats;
+// pub use beats::SegmentTreeBeats;
 
 mod dynamic;
 pub use dynamic::DynamicSegmentTree;
