@@ -88,7 +88,7 @@ where
         [self.inner_index(l), self.inner_index(r)]
     }
 
-    /// Replaces i-th element with `update`.
+    /// Replaces i-th element with given `element`.
     ///
     /// # Time complexity
     ///

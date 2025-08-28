@@ -49,6 +49,11 @@ pub use assign::AssignSegmentTree;
 mod beats;
 pub use beats::SegmentTreeBeats;
 
+mod dynamic;
+#[doc(hidden)]
+#[allow(deprecated)]
+pub use dynamic::DynamicSegmentTree;
+
 pub mod ops;
 
 pub mod traits;
