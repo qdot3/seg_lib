@@ -184,7 +184,7 @@ where
         let mut res = <Update as Monoid>::identity();
         // combine in chronological order
         while i > 0 {
-            res = <Update as Monoid>::combine(&self.data[i], &res);
+            res = <Update as Monoid>::combine(&res,&self.data[i]);
             i >>= 1;
         }
 

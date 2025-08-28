@@ -1,5 +1,3 @@
-#![deprecated = "UNDER CONSTRUCTION"]
-
 use std::{
     fmt::Debug,
     marker::PhantomData,
@@ -17,6 +15,7 @@ where
     data: Vec<Node<<Query as Monoid>::Set>>,
     range: Range<isize>,
 
+    // save allocation cost
     reusable_stack: Vec<usize>,
 
     // for debug

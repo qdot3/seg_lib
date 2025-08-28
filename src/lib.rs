@@ -28,6 +28,7 @@ See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
 |                        | range query | range update | comments |
 |------------------------|-------------|--------------|----------|
 | [`SegmentTree`]        | ✅ | ❌ | |
+| [`DynamicSegmentTree`] | ✅ | ❌ | large array |
 | [`DualSegmentTree`]    | ❌ | ✅ | |
 | [`LazySegmentTree`]    | ✅ | ✅ | |
 | [`AssignSegmentTree`]  | ✅ | ✅ | specialized for range assign update |
@@ -50,8 +51,6 @@ mod beats;
 pub use beats::SegmentTreeBeats;
 
 mod dynamic;
-#[doc(hidden)]
-#[allow(deprecated)]
 pub use dynamic::DynamicSegmentTree;
 
 pub mod ops;
