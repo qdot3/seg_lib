@@ -7,7 +7,7 @@ A collection of segment tree variants.
 
 ## Usage
 
-Run this command:
+Run this command in your project directory:
 
 ```text
 cargo add seg_lib
