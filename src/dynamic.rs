@@ -204,23 +204,23 @@ where
         let [start, end] = [start, end];
         let mid = start.midpoint(end);
 
-        // Step 2-1: r <= mid ||  mid <= l
-        if (l >= mid && self.data[p_ptr].get_right_ptr().is_none())
-            || (r <= mid && self.data[p_ptr].get_left_ptr().is_none())
-        {
-            let mut res = <Query as Monoid>::identity();
-            if (l..r).contains(&self.data[p_ptr].index) {
-                res = <Query as Monoid>::combine(self.data[p_ptr].get_element(), &res)
-            }
-            while let Some(ptr) = self.reusable_stack.pop() {
-                res = if ptr <= usize::MAX >> 1 {
-                    <Query as Monoid>::combine(self.data[ptr].get_element(), &res)
-                } else {
-                    <Query as Monoid>::combine(&res, self.data[!ptr].get_element())
-                }
-            }
-            return res;
-        }
+        // // Step 2-1: r <= mid || mid <= l
+        // if (l >= mid && self.data[p_ptr].get_right_ptr().is_none())
+        //     || (r <= mid && self.data[p_ptr].get_left_ptr().is_none())
+        // {
+        //     let mut res = <Query as Monoid>::identity();
+        //     if (l..r).contains(&self.data[p_ptr].index) {
+        //         res = <Query as Monoid>::combine(self.data[p_ptr].get_element(), &res)
+        //     }
+        //     while let Some(ptr) = self.reusable_stack.pop() {
+        //         res = if ptr <= usize::MAX >> 1 {
+        //             <Query as Monoid>::combine(self.data[ptr].get_element(), &res)
+        //         } else {
+        //             <Query as Monoid>::combine(&res, self.data[!ptr].get_element())
+        //         }
+        //     }
+        //     return res;
+        // }
 
         // Step 2-2: l < mid < r
         // (a) l <= i < mid
@@ -243,7 +243,7 @@ where
                     }
                     if let Some(l_ptr) = node.get_left_ptr() {
                         p_ptr = l_ptr;
-                        end = start.midpoint(end)
+                        end = mid
                     } else {
                         break;
                     }
@@ -253,7 +253,7 @@ where
                     }
                     if let Some(r_ptr) = node.get_right_ptr() {
                         p_ptr = r_ptr;
-                        start = start.midpoint(end)
+                        start = mid
                     } else {
                         break;
                     }
@@ -262,7 +262,9 @@ where
         }
 
         // (b)
-        res = <Query as Monoid>::combine(&res, self.data[p_ptr].get_element());
+        if (l..r).contains(&self.data[p_ptr].index) {
+            res = <Query as Monoid>::combine(&res, self.data[p_ptr].get_element());
+        }
 
         // (c) mid <= i < r
         if let Some(mut p_ptr) = self.data[p_ptr].get_right_ptr() {
