@@ -16,7 +16,7 @@ cargo add seg_lib
 
 ## Guide
 
-|                        | range query | range update | comments                            |
+|                        | range query | range update | note                                |
 | ---------------------- | ----------- | ------------ | ----------------------------------- |
 | [`SegmentTree`]        | ✅           | ❌            |                                     |
 | [`DynamicSegmentTree`] | ✅           | ❌            | large array                         |

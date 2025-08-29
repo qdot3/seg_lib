@@ -25,13 +25,13 @@ See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
 
 # Guide
 
-|                        | range query | range update | comments |
-|------------------------|-------------|--------------|----------|
-| [`SegmentTree`]        | ✅ | ❌ | |
-| [`DynamicSegmentTree`] | ✅ | ❌ | large array |
-| [`DualSegmentTree`]    | ❌ | ✅ | |
-| [`LazySegmentTree`]    | ✅ | ✅ | |
-| [`AssignSegmentTree`]  | ✅ | ✅ | specialized for range assign update |
+|                        | range query | range update | note                                |
+| ---------------------- | ----------- | ------------ | ----------------------------------- |
+| [`SegmentTree`]        | ✅           | ❌            |                                     |
+| [`DynamicSegmentTree`] | ✅           | ❌            | large array                         |
+| [`DualSegmentTree`]    | ❌           | ✅            |                                     |
+| [`LazySegmentTree`]    | ✅           | ✅            |                                     |
+| [`AssignSegmentTree`]  | ✅           | ✅            | specialized for range assign update |
 */
 
 mod normal;
