@@ -33,6 +33,14 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use seg_lib::{DynamicSegmentTree, ops::BitOr};
+    ///
+    /// let mut dst = DynamicSegmentTree::<BitOr<u32>>::new(-100..100).unwrap();
+    /// ```
     #[inline]
     #[must_use]
     pub fn new(range: Range<isize>) -> Option<Self> {
