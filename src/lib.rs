@@ -37,20 +37,22 @@ See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
 mod normal;
 pub use normal::SegmentTree;
 
+mod dynamic;
+pub use dynamic::DynamicSegmentTree;
+
 mod dual;
 pub use dual::DualSegmentTree;
 
 mod lazy;
 pub use lazy::LazySegmentTree;
 
+mod dynamic_lazy;
+
 mod assign;
 pub use assign::AssignSegmentTree;
 
 mod beats;
 // pub use beats::SegmentTreeBeats;
-
-mod dynamic;
-pub use dynamic::DynamicSegmentTree;
 
 pub mod ops;
 
