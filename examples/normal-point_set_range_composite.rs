@@ -1,7 +1,7 @@
 // verification-helper: PROBLEM https://judge.yosupo.jp/problem/point_set_range_composite
 
 use proconio::{fastout, input};
-use seg_lib::{SegmentTree, traits::Monoid};
+use seg_lib::{Monoid, SegmentTree};
 
 const MOD: u64 = 998_244_353;
 

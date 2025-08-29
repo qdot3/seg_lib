@@ -1,10 +1,7 @@
 // verification-helper: PROBLEM https://judge.yosupo.jp/problem/range_affine_range_sum
 
 use proconio::{fastout, input};
-use seg_lib::{
-    LazySegmentTree,
-    traits::{Monoid, MonoidAction},
-};
+use seg_lib::{LazySegmentTree, Monoid, MonoidAction};
 
 const MOD: u64 = 998_244_353;
 

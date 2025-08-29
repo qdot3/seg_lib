@@ -1,7 +1,7 @@
 // verification-helper: PROBLEM https://judge.yosupo.jp/problem/point_set_range_composite_large_array
 
 use proconio::{fastout, input};
-use seg_lib::{DynamicSegmentTree, traits::Monoid};
+use seg_lib::{DynamicSegmentTree, Monoid};
 
 const MOD: u64 = 998_244_353;
 
