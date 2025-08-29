@@ -52,6 +52,16 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use seg_lib::{DynamicSegmentTree, ops::Add};
+    ///
+    /// let num_query = 10_000;
+    /// // avoid reallocation
+    /// let mut dst = DynamicSegmentTree::<Add<i32>>::with_capacity(-100..100, num_query).unwrap();
+    /// ```
     #[inline]
     #[must_use]
     pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
@@ -72,6 +82,20 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use seg_lib::{DynamicSegmentTree, ops::GCD};
+    ///
+    /// let range = -100..100;
+    /// let mut dst = DynamicSegmentTree::<GCD<i32>>::new(range.clone()).unwrap();
+    /// assert_eq!(dst.len(), range.len());
+    ///
+    /// // no effect
+    /// dst.point_update(0, 999);
+    /// assert_eq!(dst.len(), range.len());
+    /// ```
     #[inline]
     #[allow(clippy::len_without_is_empty)]
     #[must_use]
@@ -84,6 +108,18 @@ where
     /// # Time complexity
     ///
     /// *O*(log *Q*)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use seg_lib::{DynamicSegmentTree, ops::Mul};
+    ///
+    /// let mut dst = DynamicSegmentTree::<Mul<i32>>::new(-100..100).unwrap();
+    /// assert_eq!(dst.point_query(0), 1);
+    ///
+    /// dst.point_update(0, 9);
+    /// assert_eq!(dst.point_query(0), 9);
+    /// ```
     pub fn point_update(&mut self, mut i: isize, mut element: <Query as Monoid>::Set) {
         if self.data.is_empty() {
             self.data.push(Node::new(i, element));
@@ -165,6 +201,22 @@ where
     /// # Time complexity
     ///
     /// *O*(log *Q*)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use seg_lib::{DynamicSegmentTree, ops::LCM};
+    ///
+    /// let mut dst = DynamicSegmentTree::<LCM<i32>>::new(-100..100).unwrap();
+    ///
+    /// dst.point_update(-50, 9);
+    /// dst.point_update(-40, 3);
+    /// dst.point_update(-30, 7);
+    ///
+    /// assert_eq!(dst.range_query(..), 9 * 7);
+    /// assert_eq!(dst.range_query(0..), 1);
+    /// assert_eq!(dst.range_query(..=-40), 9);
+    /// ```
     #[must_use]
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
@@ -311,6 +363,63 @@ where
         }
 
         res
+    }
+}
+
+impl<Query> DynamicSegmentTree<Query>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Clone,
+{
+    /// Answers query for i-th element.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(*Q*)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use seg_lib::{DynamicSegmentTree, ops::BitAnd};
+    ///
+    /// let mut dst = DynamicSegmentTree::<BitAnd<u32>>::new(-100..100).unwrap();
+    ///
+    /// dst.point_update(-50, 9);
+    /// dst.point_update(-40, 3);
+    /// dst.point_update(-30, 7);
+    ///
+    /// assert_eq!(dst.range_query(..), 9 & 3 & 7);
+    /// assert_eq!(dst.range_query(0..), 1);
+    /// assert_eq!(dst.range_query(..=-40), 9 & 3);
+    /// ```
+    pub fn point_query(&self, i: isize) -> <Query as Monoid>::Set {
+        if self.range.contains(&i) && !self.data.is_empty() {
+            let Range { mut start, mut end } = self.range;
+
+            let mut p_ptr = 0;
+            while let Some(node) = self.data.get(p_ptr) {
+                if node.index == i {
+                    return node.get_element().clone();
+                }
+
+                let mid = start.midpoint(end);
+                if i < mid
+                    && let Some(l_ptr) = node.get_left_ptr()
+                {
+                    p_ptr = l_ptr;
+                    end = mid;
+                } else if i >= mid
+                    && let Some(r_ptr) = node.get_right_ptr()
+                {
+                    p_ptr = r_ptr;
+                    start = mid;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        <Query as Monoid>::identity()
     }
 }
 
