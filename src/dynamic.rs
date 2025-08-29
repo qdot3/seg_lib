@@ -28,6 +28,8 @@ where
 {
     /// Creates a new instance initialized with [identity elements](crate::traits::Monoid::identity()).
     ///
+    /// Returns [`None`] if the given range is empty.
+    ///
     /// # Time complexity
     ///
     /// *O*(1)
@@ -48,6 +50,8 @@ where
 
     /// Creates a new instance initialized with [identity elements](crate::traits::Monoid::identity())
     /// with at least specified `capacity`.
+    ///
+    /// Returns [`None`] if the given range is empty.
     ///
     /// # Time complexity
     ///
