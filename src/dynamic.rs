@@ -8,6 +8,7 @@ use std::{
 use crate::traits::Monoid;
 
 /// A data structure that supports **range query point update** operations on large array.
+// ANCHOR: definition
 pub struct DynamicSegmentTree<Query>
 where
     Query: Monoid,
@@ -21,6 +22,7 @@ where
     // for debug
     query: PhantomData<Query>,
 }
+// ANCHOR_END: definition
 
 impl<Query> DynamicSegmentTree<Query>
 where
@@ -76,18 +78,23 @@ where
     /// ```
     #[inline]
     #[must_use]
+    // ANCHOR: with_capacity
     pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
         if range.is_empty() {
             None
         } else {
             Some(Self {
                 arena: Vec::with_capacity(capacity),
-                reusable_stack: Vec::with_capacity((range.len() | 1).ilog2() as usize * 2),
+                reusable_stack: Vec::with_capacity(
+                    // never panic: `range.len()` is always larger than 0
+                    range.len().ilog2() as usize + 1,
+                ),
                 range,
                 query: PhantomData,
             })
         }
     }
+    // ANCHOR_END: with_capacity
 
     /// Returns the number of elements.
     ///
@@ -119,7 +126,7 @@ where
     ///
     /// # Time complexity
     ///
-    /// *O*(log *Q*)
+    /// *O*(log *N*)
     ///
     /// # Example
     ///
@@ -132,6 +139,7 @@ where
     /// dst.point_update(0, 9);
     /// assert_eq!(dst.point_query(0), 9);
     /// ```
+    // ANCHOR: point_update
     pub fn point_update(&mut self, mut i: isize, mut element: <Query as Monoid>::Set) {
         if self.arena.is_empty() {
             self.arena.push(Node::new(i, element));
@@ -141,6 +149,26 @@ where
         // points to parent node
         let mut p_ptr = 0;
         let Range { mut start, mut end } = self.range;
+        macro_rules! dig_node {
+            ( $swap_condition:expr, $get_child_ptr:ident, $update_range_bounds:expr, $set_child:ident ) => {
+                if $swap_condition {
+                    std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
+                    std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
+                }
+
+                if let Some(c_ptr) = self.arena[p_ptr].$get_child_ptr() {
+                    p_ptr = c_ptr;
+                    $update_range_bounds;
+                    continue;
+                } else {
+                    let n = self.arena.len();
+                    self.arena[p_ptr].$set_child(n);
+
+                    self.arena.push(Node::new(i, element));
+                    break;
+                }
+            };
+        }
         loop {
             // for recalculating `data`
             self.reusable_stack.push(p_ptr);
@@ -152,41 +180,54 @@ where
 
             let mid = start.midpoint(end);
             if i < mid {
-                // i_l < i_p < i_r
-                if i > self.arena[p_ptr].index {
-                    std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
-                    std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
-                }
+                // i_l < i_p
+                dig_node!(
+                    i > self.arena[p_ptr].index,
+                    get_left_ptr,
+                    end = mid,
+                    set_left_ptr
+                );
+                // if i > self.arena[p_ptr].index {
+                //     std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
+                //     std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
+                // }
 
-                if let Some(l_ptr) = self.arena[p_ptr].get_left_ptr() {
-                    p_ptr = l_ptr;
-                    end = mid;
-                    continue;
-                } else {
-                    let n = self.arena.len();
-                    self.arena[p_ptr].set_left_ptr(n);
+                // if let Some(l_ptr) = self.arena[p_ptr].get_left_ptr() {
+                //     p_ptr = l_ptr;
+                //     end = mid;
+                //     continue;
+                // } else {
+                //     let n = self.arena.len();
+                //     self.arena[p_ptr].set_left_ptr(n);
 
-                    self.arena.push(Node::new(i, element));
-                    break;
-                }
+                //     self.arena.push(Node::new(i, element));
+                //     break;
+                // }
             } else {
-                // i_l < i_p < i_r
-                if i < self.arena[p_ptr].index {
-                    std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
-                    std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
-                }
+                // i_r > i_p
+                dig_node!(
+                    i < self.arena[p_ptr].index,
+                    get_right_ptr,
+                    start = mid,
+                    set_right_ptr
+                );
 
-                if let Some(r_ptr) = self.arena[p_ptr].get_right_ptr() {
-                    p_ptr = r_ptr;
-                    start = mid;
-                    continue;
-                } else {
-                    let n = self.arena.len();
-                    self.arena[p_ptr].set_right_ptr(n);
+                // if i < self.arena[p_ptr].index {
+                //     std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
+                //     std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
+                // }
 
-                    self.arena.push(Node::new(i, element));
-                    break;
-                }
+                // if let Some(r_ptr) = self.arena[p_ptr].get_right_ptr() {
+                //     p_ptr = r_ptr;
+                //     start = mid;
+                //     continue;
+                // } else {
+                //     let n = self.arena.len();
+                //     self.arena[p_ptr].set_right_ptr(n);
+
+                //     self.arena.push(Node::new(i, element));
+                //     break;
+                // }
             }
         }
 
@@ -205,6 +246,7 @@ where
             self.arena[ptr].set_combined(combined);
         }
     }
+    // ANCHOR_END: point_update
 
     /// Answers query for the given range.
     ///
@@ -212,7 +254,7 @@ where
     ///
     /// # Time complexity
     ///
-    /// *O*(log *Q*)
+    /// *O*(log *N*)
     ///
     /// # Example
     ///
@@ -387,7 +429,7 @@ where
     ///
     /// # Time complexity
     ///
-    /// *O*(log *Q*)
+    /// *O*(log *N*)
     ///
     /// # Example
     ///
@@ -466,6 +508,7 @@ where
 }
 
 #[derive(Debug, Clone)]
+// ANCHOR: node
 struct Node<T> {
     index: isize,
     element: T,
@@ -475,6 +518,7 @@ struct Node<T> {
     left_ptr: Option<NonZeroUsize>,
     right_ptr: Option<NonZeroUsize>,
 }
+// ANCHOR_END: node
 
 impl<T> Node<T> {
     #[inline]
