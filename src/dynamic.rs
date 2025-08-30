@@ -149,28 +149,8 @@ where
         // points to parent node
         let mut p_ptr = 0;
         let Range { mut start, mut end } = self.range;
-        macro_rules! dig_node {
-            ( $swap_condition:expr, $get_child_ptr:ident, $update_range_bounds:expr, $set_child:ident ) => {
-                if $swap_condition {
-                    std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
-                    std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
-                }
-
-                if let Some(c_ptr) = self.arena[p_ptr].$get_child_ptr() {
-                    p_ptr = c_ptr;
-                    $update_range_bounds;
-                    continue;
-                } else {
-                    let n = self.arena.len();
-                    self.arena[p_ptr].$set_child(n);
-
-                    self.arena.push(Node::new(i, element));
-                    break;
-                }
-            };
-        }
         loop {
-            // for recalculating `data`
+            // for recalculating combined values
             self.reusable_stack.push(p_ptr);
 
             if self.arena[p_ptr].index == i {
@@ -178,60 +158,48 @@ where
                 break;
             }
 
+            macro_rules! descend_or_grow {
+                ( $index_constraint:expr, $get_child_ptr:ident, $update_range_bounds:expr, $set_child:ident ) => {
+                    if !$index_constraint {
+                        std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
+                        std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
+                    }
+
+                    if let Some(c_ptr) = self.arena[p_ptr].$get_child_ptr() {
+                        // descend
+                        p_ptr = c_ptr;
+                        $update_range_bounds;
+                        continue;
+                    } else {
+                        // or grow
+                        let n = self.arena.len();
+                        self.arena[p_ptr].$set_child(n);
+
+                        self.arena.push(Node::new(i, element));
+                        break;
+                    }
+                };
+            }
+
             let mid = start.midpoint(end);
             if i < mid {
-                // i_l < i_p
-                dig_node!(
-                    i > self.arena[p_ptr].index,
+                descend_or_grow!(
+                    i < self.arena[p_ptr].index, // i_l < i_p
                     get_left_ptr,
-                    end = mid,
+                    end = mid, // [start, end) -> [start, mid)
                     set_left_ptr
                 );
-                // if i > self.arena[p_ptr].index {
-                //     std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
-                //     std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
-                // }
-
-                // if let Some(l_ptr) = self.arena[p_ptr].get_left_ptr() {
-                //     p_ptr = l_ptr;
-                //     end = mid;
-                //     continue;
-                // } else {
-                //     let n = self.arena.len();
-                //     self.arena[p_ptr].set_left_ptr(n);
-
-                //     self.arena.push(Node::new(i, element));
-                //     break;
-                // }
             } else {
-                // i_r > i_p
-                dig_node!(
-                    i < self.arena[p_ptr].index,
+                descend_or_grow!(
+                    i > self.arena[p_ptr].index, // i_r > i_p
                     get_right_ptr,
-                    start = mid,
+                    start = mid, // [start, end) -> [mid, end)
                     set_right_ptr
                 );
-
-                // if i < self.arena[p_ptr].index {
-                //     std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
-                //     std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
-                // }
-
-                // if let Some(r_ptr) = self.arena[p_ptr].get_right_ptr() {
-                //     p_ptr = r_ptr;
-                //     start = mid;
-                //     continue;
-                // } else {
-                //     let n = self.arena.len();
-                //     self.arena[p_ptr].set_right_ptr(n);
-
-                //     self.arena.push(Node::new(i, element));
-                //     break;
-                // }
             }
         }
 
-        // recalculate data in bottom-to-top order
+        // recalculate `combined` value in bottom-to-top order
         while let Some(ptr) = self.reusable_stack.pop() {
             let mut combined = <Query as Monoid>::identity();
 
@@ -292,7 +260,7 @@ where
             return <Query as Monoid>::identity();
         }
 
-        // Step 1: go down until the given `range` is within only one child.
+        // Step 1: descend until the given `range` is within only one child.
         let mut p_ptr = 0;
         let [mut start, mut end] = [start, end];
         // The capacity of `Vec<T>`does NOT exceeds `isize::MAX`.
@@ -409,7 +377,8 @@ where
 
         // Step 3
         while let Some(ptr) = self.reusable_stack.pop() {
-            res = if ptr <= usize::MAX >> 1 {
+            const MSB: usize = 1_usize.wrapping_shr(1);
+            res = if ptr & MSB == 0 {
                 <Query as Monoid>::combine(self.arena[ptr].get_element(), &res)
             } else {
                 <Query as Monoid>::combine(&res, self.arena[!ptr].get_element())
