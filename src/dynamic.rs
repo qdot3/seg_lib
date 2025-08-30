@@ -377,7 +377,7 @@ where
 
         // Step 3
         while let Some(ptr) = self.reusable_stack.pop() {
-            const MSB: usize = 1_usize.wrapping_shr(1);
+            const MSB: usize = 1_usize.rotate_right(1);
             res = if ptr & MSB == 0 {
                 <Query as Monoid>::combine(self.arena[ptr].get_element(), &res)
             } else {
