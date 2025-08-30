@@ -1,29 +1,32 @@
-//! Predefined operations on segment tree variants.
-//!
-//! # Custom operation
-//!
-//! ```ignore
-//! pub struct Custom<T>(PhantomData<T>);
-//!
-//! impl<T> Monoid for Custom<T> { /* ---- */ }
-//! ```
-//!
-//! # TODO
-//!
-//! If `negative_trait_impl` is stabilized, rewrite trait bounds as follows:
-//!
-//! ```ignore
-//! impl Monoid for Add<T>
-//! where
-//!     T: !Copy
-//!     for<'a> &'a T: std::ops::Add<Output =T>
-//! { /* methods */ }
-//!
-//! impl Monoid for Add<T>
-//! where
-//!     T: Copy + std::ops::Add<Output = T>
-//! { /* methods */ }
-//! ```
+/*!
+Predefined operations on segment tree variants.
+
+# Custom operation
+
+```ignore
+pub struct Custom<T>(PhantomData<T>);
+
+impl<T> Monoid for Custom<T> { /* ---- */ }
+```
+
+# TODO
+
+If `negative_trait_impl` is stabilized, rewrite trait bounds as follows:
+
+```ignore
+impl Monoid for Add<T>
+where
+    T: !Copy
+    for<'a> &'a T: std::ops::Add<Output =T>
+{ /* methods */ }
+
+impl Monoid for Add<T>
+where
+    T: Copy + std::ops::Add<Output = T>
+{ /* methods */ }
+```
+*/
+
 mod add;
 pub use add::Add;
 

@@ -387,7 +387,7 @@ where
     ///
     /// # Time complexity
     ///
-    /// *O*(*Q*)
+    /// *O*(log *Q*)
     ///
     /// # Example
     ///

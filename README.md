@@ -16,13 +16,14 @@ cargo add seg_lib
 
 ## Guide
 
-|                        | range query | range update | note                                |
-| ---------------------- | ----------- | ------------ | ----------------------------------- |
-| [`SegmentTree`]        | ✅           | ❌            |                                     |
-| [`DynamicSegmentTree`] | ✅           | ❌            | large array                         |
-| [`DualSegmentTree`]    | ❌           | ✅            |                                     |
-| [`LazySegmentTree`]    | ✅           | ✅            |                                     |
-| [`AssignSegmentTree`]  | ✅           | ✅            | specialized for range assign update |
+|                            | range query | range update | note                                |
+| -------------------------- | ----------- | ------------ | ----------------------------------- |
+| [`SegmentTree`]            | ✅           | ❌            |                                     |
+| [`DynamicSegmentTree`]     | ✅           | ❌            | large array                         |
+| [`DualSegmentTree`]        | ❌           | ✅            |                                     |
+| [`LazySegmentTree`]        | ✅           | ✅            |                                     |
+| [`DynamicLazySegmentTree`] | ✅           | ✅            | large array                         |
+| [`AssignSegmentTree`]      | ✅           | ✅            | specialized for range assign update |
 
 ## License
 
