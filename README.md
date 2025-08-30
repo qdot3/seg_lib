@@ -3,6 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/seg_lib.svg)](https://crates.io/crates/seg_lib)
 [![docs.rs](https://docs.rs/seg_lib/badge.svg)](https://docs.rs/seg_lib)
 [![verify](https://github.com/qdot3/seg_lib/workflows/verify/badge.svg)](https://github.com/qdot3/seg_lib/actions)
+[![dependency status](https://deps.rs/repo/github/qdot3/seg_lib/status.svg)](https://deps.rs/repo/github/qdot3/seg_lib/)
 
 A collection of segment tree variants.
 
