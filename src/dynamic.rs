@@ -12,7 +12,7 @@ pub struct DynamicSegmentTree<Query>
 where
     Query: Monoid,
 {
-    data: Vec<Node<<Query as Monoid>::Set>>,
+    arena: Vec<Node<<Query as Monoid>::Set>>,
     range: Range<isize>,
 
     // save allocation cost
@@ -48,7 +48,7 @@ where
             None
         } else {
             Some(Self {
-                data: Vec::new(),
+                arena: Vec::new(),
                 range,
                 reusable_stack: Vec::new(),
                 query: PhantomData,
@@ -81,7 +81,7 @@ where
             None
         } else {
             Some(Self {
-                data: Vec::with_capacity(capacity),
+                arena: Vec::with_capacity(capacity),
                 reusable_stack: Vec::with_capacity((range.len() | 1).ilog2() as usize * 2),
                 range,
                 query: PhantomData,
@@ -133,8 +133,8 @@ where
     /// assert_eq!(dst.point_query(0), 9);
     /// ```
     pub fn point_update(&mut self, mut i: isize, mut element: <Query as Monoid>::Set) {
-        if self.data.is_empty() {
-            self.data.push(Node::new(i, element));
+        if self.arena.is_empty() {
+            self.arena.push(Node::new(i, element));
             return;
         }
 
@@ -145,46 +145,46 @@ where
             // for recalculating `data`
             self.reusable_stack.push(p_ptr);
 
-            if self.data[p_ptr].index == i {
-                self.data[p_ptr].element = element;
+            if self.arena[p_ptr].index == i {
+                self.arena[p_ptr].element = element;
                 break;
             }
 
             let mid = start.midpoint(end);
             if i < mid {
                 // i_l < i_p < i_r
-                if i > self.data[p_ptr].index {
-                    std::mem::swap(&mut i, &mut self.data[p_ptr].index);
-                    std::mem::swap(&mut element, &mut self.data[p_ptr].element);
+                if i > self.arena[p_ptr].index {
+                    std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
+                    std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
                 }
 
-                if let Some(l_ptr) = self.data[p_ptr].get_left_ptr() {
+                if let Some(l_ptr) = self.arena[p_ptr].get_left_ptr() {
                     p_ptr = l_ptr;
                     end = mid;
                     continue;
                 } else {
-                    let n = self.data.len();
-                    self.data[p_ptr].set_left_ptr(n);
+                    let n = self.arena.len();
+                    self.arena[p_ptr].set_left_ptr(n);
 
-                    self.data.push(Node::new(i, element));
+                    self.arena.push(Node::new(i, element));
                     break;
                 }
             } else {
                 // i_l < i_p < i_r
-                if i < self.data[p_ptr].index {
-                    std::mem::swap(&mut i, &mut self.data[p_ptr].index);
-                    std::mem::swap(&mut element, &mut self.data[p_ptr].element);
+                if i < self.arena[p_ptr].index {
+                    std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
+                    std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
                 }
 
-                if let Some(r_ptr) = self.data[p_ptr].get_right_ptr() {
+                if let Some(r_ptr) = self.arena[p_ptr].get_right_ptr() {
                     p_ptr = r_ptr;
                     start = mid;
                     continue;
                 } else {
-                    let n = self.data.len();
-                    self.data[p_ptr].set_right_ptr(n);
+                    let n = self.arena.len();
+                    self.arena[p_ptr].set_right_ptr(n);
 
-                    self.data.push(Node::new(i, element));
+                    self.arena.push(Node::new(i, element));
                     break;
                 }
             }
@@ -194,15 +194,15 @@ where
         while let Some(ptr) = self.reusable_stack.pop() {
             let mut combined = <Query as Monoid>::identity();
 
-            if let Some(l_ptr) = self.data[ptr].get_left_ptr() {
-                combined = <Query as Monoid>::combine(&combined, self.data[l_ptr].get_combined())
+            if let Some(l_ptr) = self.arena[ptr].get_left_ptr() {
+                combined = <Query as Monoid>::combine(&combined, self.arena[l_ptr].get_combined())
             }
-            combined = <Query as Monoid>::combine(&combined, self.data[ptr].get_element());
-            if let Some(r_ptr) = self.data[ptr].get_right_ptr() {
-                combined = <Query as Monoid>::combine(&combined, self.data[r_ptr].get_combined())
+            combined = <Query as Monoid>::combine(&combined, self.arena[ptr].get_element());
+            if let Some(r_ptr) = self.arena[ptr].get_right_ptr() {
+                combined = <Query as Monoid>::combine(&combined, self.arena[r_ptr].get_combined())
             }
 
-            self.data[ptr].set_combined(combined);
+            self.arena[ptr].set_combined(combined);
         }
     }
 
@@ -246,7 +246,7 @@ where
             std::ops::Bound::Unbounded => end,
         };
 
-        if l >= r || self.data.is_empty() {
+        if l >= r || self.arena.is_empty() {
             return <Query as Monoid>::identity();
         }
 
@@ -255,9 +255,9 @@ where
         let [mut start, mut end] = [start, end];
         // The capacity of `Vec<T>`does NOT exceeds `isize::MAX`.
         // See [`Vec::with_capacity()`], [`Vec::push()`].
-        assert!(self.data.len() <= isize::MAX as usize);
+        assert!(self.arena.len() <= isize::MAX as usize);
         assert_eq!(isize::MAX as usize, usize::MAX >> 1);
-        while let Some(node) = self.data.get(p_ptr) {
+        while let Some(node) = self.arena.get(p_ptr) {
             let mid = start.midpoint(end);
             if l >= mid
                 && let Some(r_ptr) = node.get_right_ptr()
@@ -287,9 +287,9 @@ where
 
         // (a) l <= i < mid
         let mut res = <Query as Monoid>::identity();
-        if let Some(mut p_ptr) = self.data[p_ptr].get_left_ptr() {
+        if let Some(mut p_ptr) = self.arena[p_ptr].get_left_ptr() {
             let [mut start, mut end] = [start, mid];
-            while let Some(node) = self.data.get(p_ptr) {
+            while let Some(node) = self.arena.get(p_ptr) {
                 if l <= start && end <= r {
                     res = <Query as Monoid>::combine(node.get_combined(), &res);
                     break;
@@ -298,7 +298,7 @@ where
                 let mid = start.midpoint(end);
                 if l < mid {
                     if let Some(r_ptr) = node.get_right_ptr() {
-                        res = <Query as Monoid>::combine(self.data[r_ptr].get_combined(), &res)
+                        res = <Query as Monoid>::combine(self.arena[r_ptr].get_combined(), &res)
                     }
                     if (l..r).contains(&node.index) {
                         res = <Query as Monoid>::combine(node.get_element(), &res)
@@ -324,14 +324,14 @@ where
         }
 
         // (b) self
-        if (l..r).contains(&self.data[p_ptr].index) {
-            res = <Query as Monoid>::combine(&res, self.data[p_ptr].get_element());
+        if (l..r).contains(&self.arena[p_ptr].index) {
+            res = <Query as Monoid>::combine(&res, self.arena[p_ptr].get_element());
         }
 
         // (c) mid <= i < r
-        if let Some(mut p_ptr) = self.data[p_ptr].get_right_ptr() {
+        if let Some(mut p_ptr) = self.arena[p_ptr].get_right_ptr() {
             let [mut start, mut end] = [mid, end];
-            while let Some(node) = self.data.get(p_ptr) {
+            while let Some(node) = self.arena.get(p_ptr) {
                 if l <= start && end <= r {
                     res = <Query as Monoid>::combine(&res, node.get_combined());
                     break;
@@ -340,7 +340,7 @@ where
                 let mid = start.midpoint(end);
                 if r > mid {
                     if let Some(l_ptr) = node.get_left_ptr() {
-                        res = <Query as Monoid>::combine(&res, self.data[l_ptr].get_combined());
+                        res = <Query as Monoid>::combine(&res, self.arena[l_ptr].get_combined());
                     }
                     if (l..r).contains(&node.index) {
                         res = <Query as Monoid>::combine(&res, node.get_element())
@@ -357,7 +357,7 @@ where
                     }
                     if let Some(l_ptr) = node.get_left_ptr() {
                         p_ptr = l_ptr;
-                        end = mid
+                        end = mid;
                     } else {
                         break;
                     }
@@ -368,9 +368,9 @@ where
         // Step 3
         while let Some(ptr) = self.reusable_stack.pop() {
             res = if ptr <= usize::MAX >> 1 {
-                <Query as Monoid>::combine(self.data[ptr].get_element(), &res)
+                <Query as Monoid>::combine(self.arena[ptr].get_element(), &res)
             } else {
-                <Query as Monoid>::combine(&res, self.data[!ptr].get_element())
+                <Query as Monoid>::combine(&res, self.arena[!ptr].get_element())
             }
         }
 
@@ -405,11 +405,11 @@ where
     /// assert_eq!(dst.range_query(..=-40), 9 & 3);
     /// ```
     pub fn point_query(&self, i: isize) -> <Query as Monoid>::Set {
-        if self.range.contains(&i) && !self.data.is_empty() {
+        if self.range.contains(&i) && !self.arena.is_empty() {
             let Range { mut start, mut end } = self.range;
 
             let mut p_ptr = 0;
-            while let Some(node) = self.data.get(p_ptr) {
+            while let Some(node) = self.arena.get(p_ptr) {
                 if node.index == i {
                     return node.get_element().clone();
                 }
@@ -442,7 +442,7 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DynamicSegmentTree")
-            .field("data", &self.data)
+            .field("data", &self.arena)
             .field("range", &self.range)
             .field("reusable_stack", &self.reusable_stack)
             .field("query", &self.query)
@@ -457,7 +457,7 @@ where
 {
     fn clone(&self) -> Self {
         Self {
-            data: self.data.clone(),
+            arena: self.arena.clone(),
             range: self.range.clone(),
             reusable_stack: self.reusable_stack.clone(),
             query: self.query,
