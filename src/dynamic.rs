@@ -160,7 +160,7 @@ where
 
             macro_rules! descend_or_grow {
                 ( $index_constraint:expr, $get_child_ptr:ident, $update_range_bounds:expr, $set_child:ident ) => {
-                    if !$index_constraint {
+                    if !($index_constraint) {
                         std::mem::swap(&mut i, &mut self.arena[p_ptr].index);
                         std::mem::swap(&mut element, &mut self.arena[p_ptr].element);
                     }
