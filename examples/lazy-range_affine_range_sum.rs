@@ -70,9 +70,9 @@ impl<const MOD: u64> MonoidAction for ModAffine<MOD> {
 
     fn act(
         mapping: &<Self::Map as Monoid>::Set,
-        element: &<Self::Set as Monoid>::Set,
+        element: &mut <Self::Set as Monoid>::Set,
         size: Option<usize>,
-    ) -> <Self::Set as Monoid>::Set {
-        (mapping[0] * element + size.unwrap() as u64 * mapping[1]) % MOD
+    ) {
+        *element = (mapping[0] * *element + size.unwrap() as u64 * mapping[1]) % MOD
     }
 }

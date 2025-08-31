@@ -96,7 +96,7 @@ where
             .segment_size
             .as_ref()
             .map(|segment_size| segment_size.get(i).copied().unwrap_or(1));
-        self.data[i] = <Update as MonoidAction>::act(update, &self.data[i], size);
+        <Update as MonoidAction>::act(update, &mut self.data[i], size);
 
         if let Some(lazy) = self.lazy.get_mut(i) {
             *lazy = <Update as Monoid>::combine(lazy, update)

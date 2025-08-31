@@ -92,9 +92,9 @@ pub trait MonoidAction {
     /// ```
     fn act(
         mapping: &<Self::Map as Monoid>::Set,
-        element: &<Self::Set as Monoid>::Set,
+        element: &mut <Self::Set as Monoid>::Set,
         size: Option<usize>,
-    ) -> <Self::Set as Monoid>::Set;
+    ) ;
 }
 // ANCHOR_END: monoid_action_trait
 

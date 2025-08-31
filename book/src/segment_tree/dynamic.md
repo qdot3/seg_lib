@@ -140,7 +140,7 @@ let (combined, n) = dst.range_query(/* sub range */);
 {{ #include ../../../src/dynamic.rs:reusable_stack }}
 ```
 
-`res`はタイプ2の場合の計算結果です。
+`res`はタイプ2の場合の内側の計算結果です。
 
 左側のノードへのポインターはそのまま、右側のノードへのポインターはビット反転してから、`reusable_stack`に格納しています。
 ~~~
