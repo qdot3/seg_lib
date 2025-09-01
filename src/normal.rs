@@ -49,6 +49,17 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{SegmentTree, ops::BitAnd};
+    ///
+    /// let n = 100;
+    /// let st = SegmentTree::<BitAnd<u32>>::from_iter(0..n);
+    ///
+    /// assert_eq!(st.len(), n as usize)
+    /// ```
     #[allow(clippy::len_without_is_empty)]
     #[inline]
     pub fn len(&self) -> usize {
@@ -60,6 +71,20 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{SegmentTree, ops::BitOr};
+    ///
+    /// let n = 100;
+    /// let st = SegmentTree::<BitOr<u32>>::from_iter(0..n);
+    ///
+    /// assert_eq!(
+    ///     Vec::from_iter(st.iter().copied()),
+    ///     Vec::from_iter(0..n),
+    /// )
+    /// ```
     #[inline]
     #[must_use = "iterators are lazy and do nothing unless consumed"]
     pub fn iter(&self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
@@ -96,6 +121,19 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{SegmentTree, ops::Mul};
+    ///
+    /// let mut st = SegmentTree::<Mul<i32>>::new(100);
+    /// assert_eq!(st.range_query(..), 1);
+    ///
+    /// st.point_update(50, 2);
+    /// assert_eq!(st.point_query(50), &2);
+    /// assert_eq!(st.range_query(..50), 1);
+    /// ```
     pub fn point_update(&mut self, i: usize, element: <Query as Monoid>::Set) {
         let mut i = self.inner_index(i);
         self.data[i] = element;
@@ -110,6 +148,24 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{SegmentTree, ops::Max};
+    ///
+    /// let mut st = SegmentTree::<Max<i32>>::new(100);
+    /// // initialized with `None`
+    /// assert_eq!(st.range_query(..), None);
+    ///
+    /// st.point_update(50, Some(2));
+    /// st.point_update(60, Some(10));
+    /// assert_eq!(st.range_query(..), Some(10));
+    ///
+    /// // add 100 to 50th element
+    /// st.point_update_with(50, |element| element.map(|v| v + 100));
+    /// assert_eq!(st.range_query(..), Some(102));
+    /// ```
     pub fn point_update_with<F>(&mut self, i: usize, f: F)
     where
         F: FnOnce(&<Query as Monoid>::Set) -> <Query as Monoid>::Set,
@@ -129,6 +185,21 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{SegmentTree, ops::LCM};
+    ///
+    /// let mut st = SegmentTree::<LCM<i32>>::new(100);
+    /// assert_eq!(st.range_query(..), 1);
+    ///
+    /// st.point_update(30, 2);
+    /// st.point_update(40, 5);
+    /// st.point_update(50, 8);
+    /// st.point_update(60, 7);
+    /// assert_eq!(st.range_query(..=50), 5 * 8)
+    /// ```
     pub fn range_query<R>(&self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<usize>,
@@ -166,6 +237,18 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{SegmentTree, ops::BitXor};
+    ///
+    /// let mut st = SegmentTree::<BitXor<u32>>::new(100);
+    /// assert_eq!(st.point_query(10), &0);
+    ///
+    /// st.point_update(10, 6);
+    /// assert_eq!(st.point_query(10), &6);
+    /// ```
     pub fn point_query(&self, i: usize) -> &<Query as Monoid>::Set {
         let i = self.inner_index(i);
         &self.data[i]
