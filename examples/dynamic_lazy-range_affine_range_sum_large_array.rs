@@ -1,33 +1,34 @@
-// verification-helper: PROBLEM https://judge.yosupo.jp/problem/range_affine_range_sum
+// verification-helper: PROBLEM https://judge.yosupo.jp/problem/range_affine_range_sum_large_array
 
 use proconio::{fastout, input};
-use seg_lib::{LazySegmentTree, Monoid, MonoidAction};
+use seg_lib::{DynamicLazySegmentTree, Monoid, MonoidAction};
 
 const MOD: u64 = 998_244_353;
 
 #[fastout]
 fn main() {
-    input! { n: usize, q: usize, a: [u64; n], }
+    input! { n: isize, q: usize, }
 
-    let mut lst = LazySegmentTree::<ModAdd<MOD>, ModAffine<MOD>>::from(a);
+    let mut dlst =
+        DynamicLazySegmentTree::<ModAdd<MOD>, ModAffine<MOD>>::with_capacity(0..n, q).unwrap();
 
     for _ in 0..q {
         input! { flag: u8, }
 
         if flag == 0 {
-            input! { l: usize, r: usize, b: u64, c: u64, }
+            input! { l: isize, r: isize, b: u64, c: u64, }
 
-            lst.range_update(l..r, &[b, c]);
+            dlst.range_update(l..r, &[b, c]);
         } else if flag == 1 {
-            input! { l: usize, r: usize, }
+            input! { l: isize, r: isize, }
 
-            println!("{}", lst.range_query(l..r) % MOD);
+            println!("{}", dlst.range_query(l..r) % MOD);
         } else {
             unreachable!()
         }
 
         #[cfg(debug_assertions)]
-        eprintln!("{lst:?}")
+        eprintln!("{dlst:#?}")
     }
 }
 

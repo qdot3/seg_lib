@@ -82,21 +82,12 @@ where
         [self.inner_index(l), self.inner_index(r)]
     }
 
-    // /// Evaluates pending updates of i-th segment.
-    // fn eval(&mut self, i: usize) -> <Query as Monoid>::Set {
-    //     let size = self
-    //         .segment_size
-    //         .as_ref()
-    //         .map(|segment_size| segment_size.get(i).copied().unwrap_or(1));
-    //     <Update as MonoidAction>::act(&self.lazy[i], &self.data[i], size)
-    // }
-
     fn push_map(&mut self, i: usize, update: &<Update as Monoid>::Set) {
         let size = self
             .segment_size
             .as_ref()
             .map(|segment_size| segment_size.get(i).copied().unwrap_or(1));
-        <Update as MonoidAction>::act(update, &mut self.data[i], size);
+        self.data[i] = <Update as MonoidAction>::act(update, &self.data[i], size);
 
         if let Some(lazy) = self.lazy.get_mut(i) {
             *lazy = <Update as Monoid>::combine(lazy, update)
@@ -112,8 +103,6 @@ where
         let mapping = std::mem::replace(&mut self.lazy[i], <Update as Monoid>::identity());
         self.push_map(i << 1, &mapping);
         self.push_map((i << 1) | 1, &mapping);
-        // self.lazy[i << 1] = <Update as Monoid>::combine(&self.lazy[i << 1], &mapping);
-        // self.lazy[(i << 1) | 1] = <Update as Monoid>::combine(&self.lazy[(i << 1) | 1], &mapping);
     }
 
     fn propagate_all(&mut self) {

@@ -1,4 +1,5 @@
 use std::{
+    fmt::Debug,
     marker::PhantomData,
     num::NonZeroUsize,
     ops::{Range, RangeBounds},
@@ -16,7 +17,7 @@ where
     range: Range<isize>,
 
     // save allocation cost
-    reusable_stack: Vec<usize>,
+    reusable_buf: Vec<(usize, Range<isize>)>,
 
     // for debug
     query: PhantomData<Query>,
@@ -26,10 +27,28 @@ where
 impl<Query, Update> DynamicLazySegmentTree<Query, Update>
 where
     Query: Monoid,
-    <Query as Monoid>::Set: Clone,
     Update: Monoid + MonoidAction<Map = Update, Set = Query>,
-    <Update as Monoid>::Set: Clone,
 {
+    pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
+        if range.is_empty() {
+            None
+        } else {
+            // never panic
+            let height = range.len().ilog2() as usize + 1;
+            Some(Self {
+                arena: {
+                    let mut arena = Vec::with_capacity(capacity * height);
+                    arena.push(Node::new());
+                    arena
+                },
+                range,
+                reusable_buf: Vec::with_capacity(height * 4),
+                query: PhantomData,
+                update: PhantomData,
+            })
+        }
+    }
+
     /// Returns [L, r)
     #[inline]
     fn translate_range<R>(&self, range: R) -> [isize; 2]
@@ -50,45 +69,178 @@ where
         [l, r]
     }
 
-    pub fn range_update<R>(&mut self, range: R, update: <Update as Monoid>::Set)
+    fn push_map(&mut self, ptr: usize, range: Range<isize>, update: &<Update as Monoid>::Set) {
+        assert!(range.len() >= 1, "invalid node");
+        let node = &mut self.arena[ptr];
+
+        node.element = <Update as MonoidAction>::act(update, &node.element, Some(range.len()));
+        node.update = <Update as Monoid>::combine(&node.update, update)
+    }
+
+    fn propagate_at(&mut self, ptr: usize, range: Range<isize>) {
+        assert!(
+            range.len() >= 2,
+            "no child error: the node `ptr` points to should have two children"
+        );
+
+        let update = std::mem::replace(&mut self.arena[ptr].update, <Update as Monoid>::identity());
+
+        let Range { start, end } = range;
+        let mid = start.midpoint(end);
+
+        {
+            let l_ptr = if let Some(l_ptr) = self.arena[ptr].get_left_ptr() {
+                l_ptr
+            } else {
+                let l_ptr = self.arena.len();
+                self.arena.push(Node::new());
+                self.arena[ptr].set_left_ptr(l_ptr);
+                l_ptr
+            };
+            self.push_map(l_ptr, start..mid, &update);
+        }
+        {
+            let r_ptr = if let Some(r_ptr) = self.arena[ptr].get_right_ptr() {
+                r_ptr
+            } else {
+                let r_ptr = self.arena.len();
+                self.arena.push(Node::new());
+                self.arena[ptr].set_right_ptr(r_ptr);
+                r_ptr
+            };
+            self.push_map(r_ptr, mid..end, &update);
+        }
+    }
+
+    pub fn range_update<R>(&mut self, range: R, update: &<Update as Monoid>::Set)
     where
         R: RangeBounds<isize>,
     {
         let [l, r] = self.translate_range(range);
+        if l >= r {
+            return;
+        }
 
-        let Range { mut start, mut end } = self.range;
+        self.reusable_buf.push((0, self.range.clone()));
+        let mut i = 0;
+        while let Some((ptr, range)) = self.reusable_buf.get(i).cloned() {
+            let Range { start, end } = range;
 
-        // lazy propagation in top-to-bottom order
-        let mut p_ptr = 0;
-        loop {
-            let mid = start.midpoint(end);
-            if l >= mid {
-                // propagate
-                let update = self.arena[p_ptr].take_update();
-                if let Some(ptr) = self.arena[p_ptr].get_left_ptr() {
-                    <Update as MonoidAction>::act(
-                        &update,
-                        &mut self.arena[ptr].element,
-                        Some((mid - start) as usize),
-                    );
-                    self.arena[ptr].update =
-                        <Update as Monoid>::combine(&self.arena[ptr].update, &update)
-                } else {
-                    let ptr = self.arena.len();
-                    self.arena[p_ptr].set_left_ptr(ptr);
-
-                    let mut element = <Query as Monoid>::identity();
-                    <Update as MonoidAction>::act(
-                        &update,
-                        &mut element,
-                        Some((mid - start) as usize),
-                    );
-                    self.arena.push(Node::new(element, update));
+            if l <= start && end <= r {
+                // push given update
+                self.push_map(ptr, range.clone(), update);
+                if range.len() >> 1 != 0 {
+                    self.propagate_at(ptr, range);
                 }
-            } else if r <= mid {
             } else {
+                // lazy propagation in top-to-bottom order
+                self.propagate_at(ptr, range);
+
+                let mid = start.midpoint(end);
+                if l < mid {
+                    self.reusable_buf
+                        .push((self.arena[ptr].get_left_ptr().unwrap(), start..mid));
+                }
+                if r > mid {
+                    self.reusable_buf
+                        .push((self.arena[ptr].get_right_ptr().unwrap(), mid..end));
+                }
+            }
+
+            i += 1
+        }
+
+        // recalculate in bottom-to-top order
+        while let Some((ptr, _)) = self.reusable_buf.pop() {
+            assert!(
+                self.arena[ptr].get_left_ptr().is_some()
+                    == self.arena[ptr].get_right_ptr().is_some()
+            );
+            if let Some(l_ptr) = self.arena[ptr].get_left_ptr()
+                && let Some(r_ptr) = self.arena[ptr].get_right_ptr()
+            {
+                self.arena[ptr].element = <Query as Monoid>::combine(
+                    &self.arena[l_ptr].element,
+                    &self.arena[r_ptr].element,
+                )
             }
         }
+    }
+
+    pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
+    where
+        R: RangeBounds<isize>,
+    {
+        let [l, r] = self.translate_range(range);
+        if l >= r {
+            return <Query as Monoid>::identity();
+        }
+
+        let self_mid = self.range.start.midpoint(self.range.end);
+        let mut res = <Query as Monoid>::identity();
+
+        self.reusable_buf.push((0, self.range.clone()));
+        let mut i = 0;
+        while let Some((ptr, range)) = self.reusable_buf.get(i).cloned() {
+            const MSB: usize = 1_usize.rotate_right(1);
+            let Range { start, end } = range;
+
+            if l <= start && end <= r {
+                // calculate answer
+                if ptr & MSB == 0 {
+                    res = <Query as Monoid>::combine(&self.arena[ptr].element, &res)
+                } else {
+                    res = <Query as Monoid>::combine(&res, &self.arena[!ptr].element)
+                }
+            } else {
+                // lazy propagation in top-to-bottom order
+                let ptr = if ptr & MSB == 0 { ptr } else { !ptr };
+                self.propagate_at(ptr, range);
+
+                let mid = start.midpoint(end);
+                let is_left_size = mid < self_mid;
+                let mut pushed = 0;
+                if l < mid {
+                    let l_ptr = self.arena[ptr].get_left_ptr().unwrap();
+                    self.reusable_buf
+                        .push((if is_left_size { l_ptr } else { !l_ptr }, start..mid));
+                    pushed += 1;
+                }
+                if r > mid {
+                    let r_ptr = self.arena[ptr].get_right_ptr().unwrap();
+                    self.reusable_buf
+                        .push((if is_left_size { r_ptr } else { !r_ptr }, mid..end));
+                    pushed += 1
+                }
+                if pushed == 2 && is_left_size {
+                    let n = self.reusable_buf.len();
+                    self.reusable_buf.swap(n - 1, n - 2);
+                }
+            }
+
+            i += 1
+        }
+        self.reusable_buf.clear();
+
+        res
+    }
+}
+
+impl<Query, Update> Debug for DynamicLazySegmentTree<Query, Update>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Debug,
+    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    <Update as Monoid>::Set: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DynamicLazySegmentTree")
+            .field("arena", &self.arena)
+            .field("range", &self.range)
+            .field("reusable_buf", &self.reusable_buf)
+            .field("query", &self.query)
+            .field("update", &self.update)
+            .finish()
     }
 }
 
@@ -111,10 +263,10 @@ where
     Update: Monoid + MonoidAction<Map = Update, Set = Query>,
 {
     #[inline]
-    fn new(element: <Query as Monoid>::Set, update: <Update as Monoid>::Set) -> Self {
+    fn new() -> Self {
         Self {
-            element,
-            update,
+            element: <Query as Monoid>::identity(),
+            update: <Update as Monoid>::identity(),
             left_ptr: None,
             right_ptr: None,
         }
@@ -141,9 +293,21 @@ where
     fn set_right_ptr(&mut self, ptr: usize) {
         self.right_ptr = NonZeroUsize::new(ptr)
     }
+}
 
-    #[inline]
-    fn take_update(&mut self) -> <Update as Monoid>::Set {
-        std::mem::replace(&mut self.update, <Update as Monoid>::identity())
+impl<Query, Update> Debug for Node<Query, Update>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Debug,
+    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    <Update as Monoid>::Set: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Node")
+            .field("element", &self.element)
+            .field("update", &self.update)
+            .field("left_ptr", &self.left_ptr)
+            .field("right_ptr", &self.right_ptr)
+            .finish()
     }
 }
