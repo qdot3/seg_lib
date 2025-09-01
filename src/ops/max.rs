@@ -23,7 +23,7 @@ where
             (None, None) => None,
             (None, Some(rhs_or_new)) => Some(rhs_or_new),
             (Some(lhs_or_prev), None) => Some(lhs_or_prev),
-            (Some(lhs_or_prev), Some(rhs_or_new)) => Some(lhs_or_prev.min(rhs_or_new)),
+            (Some(lhs_or_prev), Some(rhs_or_new)) => Some(lhs_or_prev.max(rhs_or_new)),
         }
         .cloned()
     }
