@@ -29,6 +29,35 @@ where
     Query: Monoid,
     Update: Monoid + MonoidAction<Map = Update, Set = Query>,
 {
+    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
+    #[inline]
+    pub fn new(range: Range<isize>) -> Option<Self> {
+        if range.is_empty() {
+            None
+        } else {
+            Some(Self {
+                arena: Vec::new(),
+                reusable_buf: Vec::with_capacity((range.len().ilog2() as usize + 1) << 2),
+                range,
+                query: PhantomData,
+                update: PhantomData,
+            })
+        }
+    }
+
+    /// Creates a new instance initialized with [identity elements](crate::traits::Monoid::identity())
+    /// with at least specified `capacity`.
+    ///
+    /// Returns [`None`] if the given range is empty.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
+    #[inline]
     pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
         if range.is_empty() {
             None
@@ -42,11 +71,22 @@ where
                     arena
                 },
                 range,
-                reusable_buf: Vec::with_capacity(height * 4),
+                reusable_buf: Vec::with_capacity(height << 2),
                 query: PhantomData,
                 update: PhantomData,
             })
         }
+    }
+
+    /// Returns the number of elements.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(1)
+    #[inline]
+    #[allow(clippy::len_without_is_empty)]
+    pub fn len(&self) -> usize {
+        self.range.len()
     }
 
     /// Returns [L, r)
@@ -70,7 +110,7 @@ where
     }
 
     fn push_map(&mut self, ptr: usize, range: Range<isize>, update: &<Update as Monoid>::Set) {
-        assert!(range.len() >= 1, "invalid node");
+        assert!(!range.is_empty(), "invalid node");
         let node = &mut self.arena[ptr];
 
         node.element = <Update as MonoidAction>::act(update, &node.element, Some(range.len()));
@@ -112,6 +152,12 @@ where
         }
     }
 
+    /// Updates elements in the range using [predefined binary operation](crate::traits::Monoid::combine()).
+    /// More precisely, `a[i] <- update · a[i], i ∈ range`
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
     pub fn range_update<R>(&mut self, range: R, update: &<Update as Monoid>::Set)
     where
         R: RangeBounds<isize>,
@@ -167,6 +213,13 @@ where
         }
     }
 
+    /// Answers query for the given range.
+    ///
+    /// If the given range is empty, returns [the identity element](crate::traits::Monoid::identity()).
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<isize>,
@@ -244,6 +297,24 @@ where
     }
 }
 
+impl<Query, Update> Clone for DynamicLazySegmentTree<Query, Update>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Clone,
+    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    <Update as Monoid>::Set: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            arena: self.arena.clone(),
+            range: self.range.clone(),
+            reusable_buf: self.reusable_buf.clone(),
+            query: self.query,
+            update: self.update,
+        }
+    }
+}
+
 struct Node<Query, Update>
 where
     Query: Monoid,
@@ -309,5 +380,22 @@ where
             .field("left_ptr", &self.left_ptr)
             .field("right_ptr", &self.right_ptr)
             .finish()
+    }
+}
+
+impl<Query, Update> Clone for Node<Query, Update>
+where
+    Query: Monoid,
+    <Query as Monoid>::Set: Clone,
+    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    <Update as Monoid>::Set: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            element: self.element.clone(),
+            update: self.update.clone(),
+            left_ptr: self.left_ptr,
+            right_ptr: self.right_ptr,
+        }
     }
 }

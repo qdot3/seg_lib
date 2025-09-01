@@ -119,6 +119,7 @@ pub trait QuasiMonoidAction {
     /// ```text
     /// Σ_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
     /// ```
+    #[must_use = "this function may fail"]
     fn try_act(
         mapping: &<Self::Map as Monoid>::Set,
         element: &<Self::Set as Monoid>::Set,

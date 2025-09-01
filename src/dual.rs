@@ -21,7 +21,7 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
-    #[must_use]
+    #[inline]
     pub fn new(n: usize) -> Self {
         let data =
             Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(n << 1))
@@ -40,7 +40,6 @@ where
     /// *O*(1)
     #[allow(clippy::len_without_is_empty)]
     #[inline]
-    #[must_use]
     pub fn len(&self) -> usize {
         self.data.len() >> 1
     }
@@ -50,7 +49,7 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
-    #[must_use]
+    #[must_use = "iterators are lazy and do nothing unless consumed"]
     pub fn iter(&mut self) -> std::slice::Iter<'_, <Update as Monoid>::Set> {
         self.propagate_all();
         self.data[self.data.len() >> 1..].iter()
@@ -182,7 +181,6 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    #[must_use]
     pub fn point_query(&self, i: usize) -> <Update as Monoid>::Set {
         let mut i = self.inner_index(i);
         let mut res = <Update as Monoid>::identity();
@@ -200,7 +198,6 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    #[must_use]
     pub fn point_query_with<F, T>(&self, i: usize, f: F) -> T
     where
         F: FnOnce(<Update as Monoid>::Set) -> T,

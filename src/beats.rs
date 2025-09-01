@@ -1,7 +1,6 @@
 use crate::traits::{Monoid, QuasiMonoidAction};
 
 /// UNDER CONSTRUCTION
-#[allow(dead_code)]
 pub struct SegmentTreeBeats<Query, Update>
 where
     Query: Monoid,

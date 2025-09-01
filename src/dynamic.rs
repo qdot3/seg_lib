@@ -44,7 +44,6 @@ where
     /// let mut dst = DynamicSegmentTree::<BitOr<u32>>::new(-100..100).unwrap();
     /// ```
     #[inline]
-    #[must_use]
     pub fn new(range: Range<isize>) -> Option<Self> {
         if range.is_empty() {
             None
@@ -77,7 +76,6 @@ where
     /// let mut dst = DynamicSegmentTree::<Add<i32>>::with_capacity(-100..100, num_query).unwrap();
     /// ```
     #[inline]
-    #[must_use]
     // ANCHOR: with_capacity
     pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
         if range.is_empty() {
@@ -117,7 +115,6 @@ where
     /// ```
     #[inline]
     #[allow(clippy::len_without_is_empty)]
-    #[must_use]
     pub fn len(&self) -> usize {
         self.range.len()
     }
@@ -239,7 +236,6 @@ where
     /// assert_eq!(dst.range_query(0..), 1);
     /// assert_eq!(dst.range_query(..=-40), 9);
     /// ```
-    #[must_use]
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<isize>,
@@ -541,6 +537,6 @@ impl<T> Node<T> {
 
     #[inline]
     fn set_combined(&mut self, combined: T) {
-        let _ = self.combined.insert(combined);
+        self.combined = Some(combined);
     }
 }
