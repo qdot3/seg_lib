@@ -34,3 +34,7 @@ Licensed under either of
  * [MIT license](http://opensource.org/licenses/MIT)
 
 at your option.
+
+## Mics
+
+実装の詳細を解説した[日本語の本](https://qdot3.github.io/seg_lib)を執筆しています。
