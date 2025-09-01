@@ -35,6 +35,6 @@ Licensed under either of
 
 at your option.
 
-## Mics
+## Misc
 
 実装の詳細を解説した[日本語の本](https://qdot3.github.io/seg_lib)を執筆しています。

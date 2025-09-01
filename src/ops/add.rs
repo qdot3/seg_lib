@@ -5,6 +5,7 @@ use num_traits::Zero;
 use crate::traits::Monoid;
 
 /// Represents `+` operation.
+// ANCHOR: def_and_impl_monoid
 pub struct Add<T>(PhantomData<T>);
 
 impl<T> Monoid for Add<T>
@@ -24,3 +25,4 @@ where
         lhs_or_prev + rhs_or_new
     }
 }
+// ANCHOR_END: def_and_impl_monoid

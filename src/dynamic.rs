@@ -136,7 +136,6 @@ where
     /// dst.point_update(0, 9);
     /// assert_eq!(dst.point_query(0), 9);
     /// ```
-    // ANCHOR: point_update
     pub fn point_update(&mut self, mut i: isize, mut element: <Query as Monoid>::Set) {
         if self.arena.is_empty() {
             self.arena.push(Node::new(i, element));
@@ -211,7 +210,6 @@ where
             self.arena[ptr].set_combined(combined);
         }
     }
-    // ANCHOR_END: point_update
 
     /// Answers query for the given range.
     ///

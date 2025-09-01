@@ -3,6 +3,7 @@ use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 use crate::traits::{Monoid, MonoidAction};
 
 /// A data structure that supports **range query range update** operations.
+// ANCHOR: definition
 pub struct LazySegmentTree<Query, Update>
 where
     Query: Monoid,
@@ -11,12 +12,14 @@ where
     data: Box<[<Query as Monoid>::Set]>,
     lazy: Box<[<Update as Monoid>::Set]>,
 
+    /// calculate if [`MonoidAction::USE_SEGMENT_SIZE`] is `true`.
     segment_size: Option<Box<[usize]>>,
 
     // for debug
     query: PhantomData<Query>,
     update: PhantomData<Update>,
 }
+// ANCHOR_END: definition
 
 impl<Query, Update> LazySegmentTree<Query, Update>
 where

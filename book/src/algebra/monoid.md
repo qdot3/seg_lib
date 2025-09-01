@@ -27,7 +27,7 @@ $S$を集合、$\cdot \colon S \times S \longrightarrow S$を二項演算とす�
 ```rust, no_run
 fn binary_operation<S>(lhs: Option<S>, rhs: Option<S>) -> Option<S> {
     match (lhs, rhs) {
-        (Some(lhs), Some(rhs)) => unimplemented!("lhs ⋅ rhs"),
+        (Some(lhs), Some(rhs)) => todo!("lhs ⋅ rhs"),
         (Some(lhs), None) => Some(lhs),
         (None, Some(rhs)) => Some(rhs),
         (None, None) => None
@@ -42,17 +42,21 @@ fn binary_operation<S>(lhs: Option<S>, rhs: Option<S>) -> Option<S> {
 ```rust, no_run
 {{ #include ../../../src/traits.rs:monoid_trait }}
 ```
+
+`Set`をジェネリック型ではなく関連型としてもっています。
+こうすることで、ジェネリックパラメーターが1つ減り、実装がシンプルになります。
+
+```rust, no_run
+{{ #include ../../../src/normal.rs:definition }}
+```
 ~~~
 
 ## おまけ
 
-セグメント木には半群でない代数的構造も乗ります。
+セグメント木には半群ですらない代数的構造も乗ります。
 問題にしている範囲で半群のように振舞えば何でもよいのです。
 
 ```admonish note title="主張（セグメント木に乗る代数的構造）"
-- 隣り合う2つのノードの間に演算が定義されていること
-- 連続する3つ以上のノードの内、どの隣り合うノードから計算しても、結果が変わらないこと
-
-あるデータ列に対して上記が成り立つとき、これはセグメント木に乗る。
+あるデータ列について、隣り合う要素の間に結合的な二項演算が定義されているとき、これはセグメント木に乗る。
 とくに、隣り合わないノードの間に演算が定義されていなくともよい。
 ```

@@ -3,6 +3,7 @@ use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
 use crate::traits::Monoid;
 
 /// A data structure that supports **range query point update** operations.
+// ANCHOR: definition
 pub struct SegmentTree<Query>
 where
     Query: Monoid,
@@ -13,8 +14,11 @@ where
     /// - data\[1..n\] : nodes to store the combined value of the children.
     /// - data\[n..2n\]: nodes to store value for each cell.
     data: Box<[<Query as Monoid>::Set]>,
+
+    // for debug
     query: PhantomData<Query>,
 }
+// ANCHOR_END: definition
 
 impl<Query> SegmentTree<Query>
 where

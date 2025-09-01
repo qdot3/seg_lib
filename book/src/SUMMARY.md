@@ -6,6 +6,8 @@
   - [モノイド](./algebra/monoid.md)
   - [モノイド作用](./algebra/monoid_action.md)
 
+- [定義済み演算](./predefined_ops.md)
+
 - [セグメント木の仲間たち]()
   - [相対セグメント木]()
   - [遅延伝搬セグメント木]()
