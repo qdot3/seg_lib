@@ -85,11 +85,7 @@ pub trait MonoidAction {
     /// # Size dependency
     ///
     /// You can access segment size if you want.
-    /// This is equivalent to attaching the segment size information to [`Self::Set`] as follows:
-    ///
-    /// ```text
-    /// Σ_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
-    /// ```
+    /// This is equivalent to attaching the segment size information to [`Self::Set`] but more performant.
     fn act(
         mapping: &<Self::Map as Monoid>::Set,
         element: &<Self::Set as Monoid>::Set,
@@ -114,11 +110,7 @@ pub trait QuasiMonoidAction {
     /// # Size dependency
     ///
     /// You can access segment size if you want.
-    /// This is equivalent to attaching the segment size information to [`Self::Set`] as follows:
-    ///
-    /// ```text
-    /// Σ_{l <= i < r} f(a_i, 1) = f(Σ_{l <= i < r} a_i, r-l)
-    /// ```
+    /// This is equivalent to attaching the segment size information to [`Self::Set`] but more performant.
     #[must_use = "this function may fail"]
     fn try_act(
         mapping: &<Self::Map as Monoid>::Set,
