@@ -1,33 +1,24 @@
-use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
+use std::{fmt::Debug, ops::RangeBounds};
 
 use crate::traits::{Monoid, MonoidAction};
 
 /// A data structure that supports **range query range update** operations.
 // ANCHOR: definition
-pub struct LazySegmentTree<Query, Update, Action>
+pub struct LazySegmentTree<Action>
 where
-    Query: Monoid,
-    Update: Monoid,
-    Action: MonoidAction<Set = Query, Map = Update>,
+    Action: MonoidAction,
 {
-    data: Box<[<Query as Monoid>::Set]>,
-    lazy: Box<[<Update as Monoid>::Set]>,
+    data: Box<[<<Action as MonoidAction>::Set as Monoid>::Set]>,
+    lazy: Box<[<<Action as MonoidAction>::Map as Monoid>::Set]>,
 
     /// calculate if [`MonoidAction::USE_SEGMENT_SIZE`] is `true`.
     segment_size: Option<Box<[usize]>>,
-
-    // for debug
-    query: PhantomData<Query>,
-    update: PhantomData<Update>,
-    action: PhantomData<Action>,
 }
 // ANCHOR_END: definition
 
-impl<Query, Update, Action> LazySegmentTree<Query, Update, Action>
+impl<Action> LazySegmentTree<Action>
 where
-    Query: Monoid,
-    Update: Monoid,
-    Action: MonoidAction<Set = Query, Map = Update>,
+    Action: MonoidAction,
 {
     /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
     ///
@@ -36,7 +27,9 @@ where
     /// *O*(*N*)
     #[inline]
     pub fn new(n: usize) -> Self {
-        Self::from_iter(std::iter::repeat_with(<Query as Monoid>::identity).take(n))
+        Self::from_iter(
+            std::iter::repeat_with(<<Action as MonoidAction>::Set as Monoid>::identity).take(n),
+        )
     }
 
     /// Returns the number of elements.
@@ -57,7 +50,7 @@ where
     /// *O*(*N*)
     #[inline]
     #[must_use = "iterators are lazy and do nothing unless consumed"]
-    pub fn iter(&mut self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
+    pub fn iter(&mut self) -> std::slice::Iter<'_, <<Action as MonoidAction>::Set as Monoid>::Set> {
         self.propagate_all();
         self.recalculate_all();
         self.data[self.data.len()..].iter()
@@ -88,7 +81,7 @@ where
         [self.inner_index(l), self.inner_index(r)]
     }
 
-    fn push_map(&mut self, i: usize, update: &<Update as Monoid>::Set) {
+    fn push_map(&mut self, i: usize, update: &<<Action as MonoidAction>::Map as Monoid>::Set) {
         let size = self
             .segment_size
             .as_ref()
@@ -96,7 +89,7 @@ where
         self.data[i] = <Action as MonoidAction>::act(update, &self.data[i], size);
 
         if let Some(lazy) = self.lazy.get_mut(i) {
-            *lazy = <Update as Monoid>::combine(lazy, update)
+            *lazy = <<Action as MonoidAction>::Map as Monoid>::combine(lazy, update)
         }
     }
 
@@ -106,7 +99,10 @@ where
     ///
     /// Panics if either of children does **not** exist.
     fn propagate_at(&mut self, i: usize) {
-        let mapping = std::mem::replace(&mut self.lazy[i], <Update as Monoid>::identity());
+        let mapping = std::mem::replace(
+            &mut self.lazy[i],
+            <<Action as MonoidAction>::Map as Monoid>::identity(),
+        );
         self.push_map(i << 1, &mapping);
         self.push_map((i << 1) | 1, &mapping);
     }
@@ -124,7 +120,10 @@ where
     /// Panics if either of children does **not** exist.
     #[inline]
     fn recalculate_at(&mut self, i: usize) {
-        self.data[i] = <Query as Monoid>::combine(&self.data[i << 1], &self.data[(i << 1) | 1])
+        self.data[i] = <<Action as MonoidAction>::Set as Monoid>::combine(
+            &self.data[i << 1],
+            &self.data[(i << 1) | 1],
+        )
     }
 
     /// Recalculates all data segments.
@@ -140,8 +139,11 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn range_update<R>(&mut self, range: R, update: &<Update as Monoid>::Set)
-    where
+    pub fn range_update<R>(
+        &mut self,
+        range: R,
+        update: &<<Action as MonoidAction>::Map as Monoid>::Set,
+    ) where
         R: RangeBounds<usize>,
     {
         let [l, r] = self.inner_range(range);
@@ -151,7 +153,7 @@ where
         }
 
         // lazy propagation in bottom-to-top order
-        if !<Update as Monoid>::IS_COMMUTATIVE {
+        if !<<Action as MonoidAction>::Map as Monoid>::IS_COMMUTATIVE {
             let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
             for d in (diff + 1..usize::BITS - l.leading_zeros()).rev() {
                 self.propagate_at(l >> d);
@@ -201,11 +203,15 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn point_update(&mut self, i: usize, update: &<Update as Monoid>::Set) {
+    pub fn point_update(
+        &mut self,
+        i: usize,
+        update: &<<Action as MonoidAction>::Map as Monoid>::Set,
+    ) {
         let i = self.inner_index(i);
 
         // lazy propagation
-        if !<Update as Monoid>::IS_COMMUTATIVE {
+        if !<<Action as MonoidAction>::Map as Monoid>::IS_COMMUTATIVE {
             for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
                 self.propagate_at(i >> d);
             }
@@ -226,14 +232,14 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
+    pub fn range_query<R>(&mut self, range: R) -> <<Action as MonoidAction>::Set as Monoid>::Set
     where
         R: RangeBounds<usize>,
     {
         let [l, r] = self.inner_range(range);
 
         if l >= r {
-            return <Query as Monoid>::identity();
+            return <<Action as MonoidAction>::Set as Monoid>::identity();
         }
 
         // lazy propagation
@@ -250,22 +256,25 @@ where
 
         // reflect pending updates and combine segments
         let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
-        let [mut acc_l, mut acc_r] = [<Query as Monoid>::identity(), <Query as Monoid>::identity()];
+        let [mut acc_l, mut acc_r] = [
+            <<Action as MonoidAction>::Set as Monoid>::identity(),
+            <<Action as MonoidAction>::Set as Monoid>::identity(),
+        ];
         while {
             if l >= r {
-                acc_l = <Query as Monoid>::combine(&acc_l, &self.data[l]);
+                acc_l = <<Action as MonoidAction>::Set as Monoid>::combine(&acc_l, &self.data[l]);
                 l += 1;
                 l >>= l.trailing_zeros();
             } else {
                 r -= 1;
-                acc_r = <Query as Monoid>::combine(&self.data[r], &acc_r);
+                acc_r = <<Action as MonoidAction>::Set as Monoid>::combine(&self.data[r], &acc_r);
                 r >>= r.trailing_zeros();
             }
 
             l != r
         } {}
 
-        <Query as Monoid>::combine(&acc_l, &acc_r)
+        <<Action as MonoidAction>::Set as Monoid>::combine(&acc_l, &acc_r)
     }
 
     /// Answers query for i-th element.
@@ -273,7 +282,7 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn point_query(&mut self, i: usize) -> &<Query as Monoid>::Set {
+    pub fn point_query(&mut self, i: usize) -> &<<Action as MonoidAction>::Set as Monoid>::Set {
         let i = self.inner_index(i);
 
         // lazy propagation
@@ -285,26 +294,25 @@ where
     }
 }
 
-impl<Query, Update, Action> From<Vec<<Query as Monoid>::Set>>
-    for LazySegmentTree<Query, Update, Action>
+impl<Action> From<Vec<<<Action as MonoidAction>::Set as Monoid>::Set>> for LazySegmentTree<Action>
 where
-    Query: Monoid,
-    Update: Monoid,
-    Action: MonoidAction<Set = Query, Map = Update>,
+    Action: MonoidAction,
 {
-    fn from(values: Vec<<Query as Monoid>::Set>) -> Self {
+    fn from(values: Vec<<<Action as MonoidAction>::Set as Monoid>::Set>) -> Self {
         let n = values.len();
 
         let data = Vec::from_iter(
-            std::iter::repeat_with(<Query as Monoid>::identity)
+            std::iter::repeat_with(<<Action as MonoidAction>::Set as Monoid>::identity)
                 .take(n)
                 .chain(values),
         )
         .into_boxed_slice();
 
-        let lazy =
-            Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(n << 1))
-                .into_boxed_slice();
+        let lazy = Vec::from_iter(
+            std::iter::repeat_with(<<Action as MonoidAction>::Map as Monoid>::identity)
+                .take(n << 1),
+        )
+        .into_boxed_slice();
 
         let segment_size = <Action as MonoidAction>::USE_SEGMENT_SIZE.then(|| {
             let mut segment_size =
@@ -321,36 +329,35 @@ where
             data,
             lazy,
             segment_size,
-            query: PhantomData,
-            update: PhantomData,
-            action: PhantomData,
         };
         lst.recalculate_all();
         lst
     }
 }
 
-impl<Query, Update, Action> FromIterator<<Query as Monoid>::Set>
-    for LazySegmentTree<Query, Update, Action>
+impl<Action> FromIterator<<<Action as MonoidAction>::Set as Monoid>::Set>
+    for LazySegmentTree<Action>
 where
-    Query: Monoid,
-    Update: Monoid,
-    Action: MonoidAction<Set = Query, Map = Update>,
+    Action: MonoidAction,
 {
-    fn from_iter<T: IntoIterator<Item = <Query as Monoid>::Set>>(iter: T) -> Self {
+    fn from_iter<T: IntoIterator<Item = <<Action as MonoidAction>::Set as Monoid>::Set>>(
+        iter: T,
+    ) -> Self {
         let iter = iter.into_iter();
         let (min, max) = iter.size_hint();
         if Some(min) == max {
             let data = Vec::from_iter(
-                std::iter::repeat_with(<Query as Monoid>::identity)
+                std::iter::repeat_with(<<Action as MonoidAction>::Set as Monoid>::identity)
                     .take(min)
                     .chain(iter),
             )
             .into_boxed_slice();
 
-            let lazy =
-                Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(min << 1))
-                    .into_boxed_slice();
+            let lazy = Vec::from_iter(
+                std::iter::repeat_with(<<Action as MonoidAction>::Map as Monoid>::identity)
+                    .take(min << 1),
+            )
+            .into_boxed_slice();
 
             let segment_size = <Action as MonoidAction>::USE_SEGMENT_SIZE.then(|| {
                 let mut segment_size =
@@ -367,9 +374,6 @@ where
                 data,
                 lazy,
                 segment_size,
-                query: PhantomData,
-                update: PhantomData,
-                action: PhantomData,
             };
             lst.recalculate_all();
             lst
@@ -379,41 +383,32 @@ where
     }
 }
 
-impl<Query, Update, Action> Debug for LazySegmentTree<Query, Update, Action>
+impl<Action> Debug for LazySegmentTree<Action>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Debug,
-    Update: Monoid,
-    <Update as Monoid>::Set: Debug,
-    Action: MonoidAction<Set = Query, Map = Update>,
+    <<Action as MonoidAction>::Set as Monoid>::Set: Debug,
+    <<Action as MonoidAction>::Map as Monoid>::Set: Debug,
+    Action: MonoidAction,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LazySegmentTree")
             .field("data", &self.data)
             .field("lazy", &self.lazy)
             .field("segment_size", &self.segment_size)
-            .field("query", &self.query)
-            .field("update", &self.update)
             .finish()
     }
 }
 
-impl<Query, Update, Action> Clone for LazySegmentTree<Query, Update, Action>
+impl<Action> Clone for LazySegmentTree<Action>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
-    Update: Monoid,
-    <Update as Monoid>::Set: Clone,
-    Action: MonoidAction<Set = Query, Map = Update>,
+    <<Action as MonoidAction>::Set as Monoid>::Set: Clone,
+    <<Action as MonoidAction>::Map as Monoid>::Set: Clone,
+    Action: MonoidAction,
 {
     fn clone(&self) -> Self {
         Self {
             data: self.data.clone(),
             lazy: self.lazy.clone(),
             segment_size: self.segment_size.clone(),
-            query: self.query,
-            update: self.update,
-            action: self.action,
         }
     }
 }

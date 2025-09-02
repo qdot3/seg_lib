@@ -10,8 +10,7 @@ fn main() {
     input! { n: isize, q: usize, }
 
     let mut dlst =
-        DynamicLazySegmentTree::<ModAdd<MOD>, ModAffine<MOD>, Action<MOD>>::with_capacity(0..n, q)
-            .unwrap();
+        DynamicLazySegmentTree::<RangeAddRangeAffine<MOD>>::with_capacity(0..n, q).unwrap();
 
     for _ in 0..q {
         input! { flag: u8, }
@@ -64,9 +63,9 @@ impl<const MOD: u64> Monoid for ModAffine<MOD> {
     }
 }
 
-struct Action<const MOD: u64>;
+struct RangeAddRangeAffine<const MOD: u64>;
 
-impl<const MOD: u64> MonoidAction for Action<MOD> {
+impl<const MOD: u64> MonoidAction for RangeAddRangeAffine<MOD> {
     type Map = ModAffine<MOD>;
     type Set = ModAdd<MOD>;
 

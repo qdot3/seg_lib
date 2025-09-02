@@ -1,6 +1,5 @@
 use std::{
     fmt::Debug,
-    marker::PhantomData,
     num::NonZeroUsize,
     ops::{Range, RangeBounds},
 };
@@ -8,29 +7,21 @@ use std::{
 use crate::traits::{Monoid, MonoidAction};
 
 /// A data structure that supports **range query range update** operations on large array.
-pub struct DynamicLazySegmentTree<Query, Update, Action>
+pub struct DynamicLazySegmentTree<Action>
 where
-    Query: Monoid,
-    Update: Monoid,
-    Action: MonoidAction<Map = Update, Set = Query>,
+    Action: MonoidAction,
 {
-    arena: Vec<Node<Query, Update>>,
+    arena: Vec<Node<<Action as MonoidAction>::Set, <Action as MonoidAction>::Map>>,
     range: Range<isize>,
 
     // save allocation cost
     reusable_buf: Vec<(usize, Range<isize>)>,
-
     // for debug
-    query: PhantomData<Query>,
-    update: PhantomData<Update>,
-    action: PhantomData<Action>,
 }
 
-impl<Query, Update, Action> DynamicLazySegmentTree<Query, Update, Action>
+impl<Action> DynamicLazySegmentTree<Action>
 where
-    Query: Monoid,
-    Update: Monoid,
-    Action: MonoidAction<Map = Update, Set = Query>,
+    Action: MonoidAction,
 {
     /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
     ///
@@ -46,9 +37,6 @@ where
                 arena: Vec::new(),
                 reusable_buf: Vec::with_capacity((range.len().ilog2() as usize + 1) << 2),
                 range,
-                query: PhantomData,
-                update: PhantomData,
-                action: PhantomData,
             })
         }
     }
@@ -76,9 +64,6 @@ where
                 },
                 range,
                 reusable_buf: Vec::with_capacity(height << 2),
-                query: PhantomData,
-                update: PhantomData,
-                action: PhantomData,
             })
         }
     }
@@ -114,12 +99,17 @@ where
         [l, r]
     }
 
-    fn push_map(&mut self, ptr: usize, range: Range<isize>, update: &<Update as Monoid>::Set) {
+    fn push_map(
+        &mut self,
+        ptr: usize,
+        range: Range<isize>,
+        update: &<<Action as MonoidAction>::Map as Monoid>::Set,
+    ) {
         assert!(!range.is_empty(), "invalid node");
         let node = &mut self.arena[ptr];
 
         node.element = <Action as MonoidAction>::act(update, &node.element, Some(range.len()));
-        node.update = <Update as Monoid>::combine(&node.update, update)
+        node.update = <<Action as MonoidAction>::Map as Monoid>::combine(&node.update, update)
     }
 
     fn propagate_at(&mut self, ptr: usize, range: Range<isize>) {
@@ -128,7 +118,10 @@ where
             "no child error: the node `ptr` points to should have two children"
         );
 
-        let update = std::mem::replace(&mut self.arena[ptr].update, <Update as Monoid>::identity());
+        let update = std::mem::replace(
+            &mut self.arena[ptr].update,
+            <<Action as MonoidAction>::Map as Monoid>::identity(),
+        );
 
         let Range { start, end } = range;
         let mid = start.midpoint(end);
@@ -163,8 +156,11 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn range_update<R>(&mut self, range: R, update: &<Update as Monoid>::Set)
-    where
+    pub fn range_update<R>(
+        &mut self,
+        range: R,
+        update: &<<Action as MonoidAction>::Map as Monoid>::Set,
+    ) where
         R: RangeBounds<isize>,
     {
         let [l, r] = self.translate_range(range);
@@ -210,7 +206,7 @@ where
             if let Some(l_ptr) = self.arena[ptr].get_left_ptr()
                 && let Some(r_ptr) = self.arena[ptr].get_right_ptr()
             {
-                self.arena[ptr].element = <Query as Monoid>::combine(
+                self.arena[ptr].element = <<Action as MonoidAction>::Set as Monoid>::combine(
                     &self.arena[l_ptr].element,
                     &self.arena[r_ptr].element,
                 )
@@ -225,17 +221,17 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
-    pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
+    pub fn range_query<R>(&mut self, range: R) -> <<Action as MonoidAction>::Set as Monoid>::Set
     where
         R: RangeBounds<isize>,
     {
         let [l, r] = self.translate_range(range);
         if l >= r {
-            return <Query as Monoid>::identity();
+            return <<Action as MonoidAction>::Set as Monoid>::identity();
         }
 
         let self_mid = self.range.start.midpoint(self.range.end);
-        let mut res = <Query as Monoid>::identity();
+        let mut res = <<Action as MonoidAction>::Set as Monoid>::identity();
 
         self.reusable_buf.push((0, self.range.clone()));
         let mut i = 0;
@@ -246,9 +242,15 @@ where
             if l <= start && end <= r {
                 // calculate answer
                 if ptr & MSB == 0 {
-                    res = <Query as Monoid>::combine(&self.arena[ptr].element, &res)
+                    res = <<Action as MonoidAction>::Set as Monoid>::combine(
+                        &self.arena[ptr].element,
+                        &res,
+                    )
                 } else {
-                    res = <Query as Monoid>::combine(&res, &self.arena[!ptr].element)
+                    res = <<Action as MonoidAction>::Set as Monoid>::combine(
+                        &res,
+                        &self.arena[!ptr].element,
+                    )
                 }
             } else {
                 // lazy propagation in top-to-bottom order
@@ -284,41 +286,32 @@ where
     }
 }
 
-impl<Query, Update, Action> Debug for DynamicLazySegmentTree<Query, Update, Action>
+impl<Action> Debug for DynamicLazySegmentTree<Action>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Debug,
-    Update: Monoid,
-    <Update as Monoid>::Set: Debug,
-    Action: MonoidAction<Map = Update, Set = Query>,
+    <<Action as MonoidAction>::Set as Monoid>::Set: Debug,
+    <<Action as MonoidAction>::Map as Monoid>::Set: Debug,
+    Action: MonoidAction,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DynamicLazySegmentTree")
             .field("arena", &self.arena)
             .field("range", &self.range)
             .field("reusable_buf", &self.reusable_buf)
-            .field("query", &self.query)
-            .field("update", &self.update)
             .finish()
     }
 }
 
-impl<Query, Update, Action> Clone for DynamicLazySegmentTree<Query, Update, Action>
+impl<Action> Clone for DynamicLazySegmentTree<Action>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
-    Update: Monoid,
-    <Update as Monoid>::Set: Clone,
-    Action: MonoidAction<Map = Update, Set = Query>,
+    <<Action as MonoidAction>::Set as Monoid>::Set: Clone,
+    <<Action as MonoidAction>::Map as Monoid>::Set: Clone,
+    Action: MonoidAction,
 {
     fn clone(&self) -> Self {
         Self {
             arena: self.arena.clone(),
             range: self.range.clone(),
             reusable_buf: self.reusable_buf.clone(),
-            query: self.query,
-            update: self.update,
-            action: PhantomData,
         }
     }
 }
