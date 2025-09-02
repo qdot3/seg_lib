@@ -1,4 +1,4 @@
-use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
+use std::{fmt::Debug, ops::RangeBounds};
 
 use crate::traits::Monoid;
 
@@ -8,8 +8,6 @@ where
     Update: Monoid,
 {
     data: Box<[<Update as Monoid>::Set]>,
-    /// for Debug
-    update: PhantomData<Update>,
 }
 
 impl<Update> DualSegmentTree<Update>
@@ -35,10 +33,7 @@ where
             Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(n << 1))
                 .into_boxed_slice();
 
-        Self {
-            data,
-            update: PhantomData,
-        }
+        Self { data }
     }
 
     /// Returns the number of elements.
@@ -87,7 +82,7 @@ where
 
     /// Returns `[l, r)` on `self.data`.
     #[inline]
-    fn inner_range<R>(&self, range: R) -> [usize; 2]
+    fn translate_range<R>(&self, range: R) -> [usize; 2]
     where
         R: RangeBounds<usize>,
     {
@@ -99,10 +94,10 @@ where
         let r = match range.end_bound() {
             std::ops::Bound::Included(r) => r + 1,
             std::ops::Bound::Excluded(r) => *r,
-            std::ops::Bound::Unbounded => self.data.len() / 2,
+            std::ops::Bound::Unbounded => self.data.len() >> 1,
         };
 
-        [self.inner_index(l), self.inner_index(r)]
+        [l, r]
     }
 
     /// Performs pending [`Monoid::combine`] operations for `i`-th node.
@@ -155,15 +150,17 @@ where
     where
         R: RangeBounds<usize>,
     {
-        let [l, r] = self.inner_range(range);
-
-        if l >= r {
-            return;
-        }
-        if l + 1 == r {
-            self.point_update(l - self.data.len() / 2, update);
-            return;
-        }
+        let [l, r] = {
+            let [l, r] = self.translate_range(range);
+            if l >= r {
+                return;
+            }
+            if l + 1 == r {
+                self.point_update(l, update);
+                return;
+            }
+            [self.inner_index(l), self.inner_index(r)]
+        };
 
         let [l, r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
         // lazy propagation in top-to-bottom order
@@ -289,10 +286,7 @@ where
         )
         .into_boxed_slice();
 
-        Self {
-            data,
-            update: PhantomData,
-        }
+        Self { data }
     }
 }
 
@@ -311,10 +305,7 @@ where
             )
             .into_boxed_slice();
 
-            Self {
-                data,
-                update: PhantomData,
-            }
+            Self { data }
         } else {
             Vec::from_iter(iter).into()
         }
@@ -329,7 +320,6 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DualSegmentTree")
             .field("data", &self.data)
-            .field("update", &self.update)
             .finish()
     }
 }
@@ -342,7 +332,6 @@ where
     fn clone(&self) -> Self {
         Self {
             data: self.data.clone(),
-            update: self.update,
         }
     }
 }

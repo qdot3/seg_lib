@@ -62,7 +62,7 @@ where
 
     /// Returns `[l, r)` on `self.data`.
     #[inline]
-    fn inner_range<R>(&self, range: R) -> [usize; 2]
+    fn translate_range<R>(&self, range: R) -> [usize; 2]
     where
         R: RangeBounds<usize>,
     {
@@ -77,7 +77,7 @@ where
             std::ops::Bound::Unbounded => self.data.len() / 2,
         };
 
-        [self.inner_index(l), self.inner_index(r)]
+        [l, r]
     }
 
     fn push_map(&mut self, i: usize, update: &<<Action as MonoidAction>::Map as Monoid>::Set) {
@@ -145,11 +145,18 @@ where
     ) where
         R: RangeBounds<usize>,
     {
-        let [l, r] = self.inner_range(range);
+        let [l, r] = {
+            let [l, r] = self.translate_range(range);
+            if l >= r {
+                return;
+            }
+            if l + 1 == r {
+                self.point_update(l, update);
+                return;
+            }
 
-        if l >= r {
-            return;
-        }
+            [self.inner_index(l), self.inner_index(r)]
+        };
 
         // lazy propagation in bottom-to-top order
         if !<<Action as MonoidAction>::Map as Monoid>::IS_COMMUTATIVE {
@@ -235,11 +242,19 @@ where
     where
         R: RangeBounds<usize>,
     {
-        let [l, r] = self.inner_range(range);
-
-        if l >= r {
-            return <<Action as MonoidAction>::Set as Monoid>::identity();
-        }
+        let [l, r] = {
+            let [l, r] = self.translate_range(range);
+            if l >= r {
+                return <<Action as MonoidAction>::Set as Monoid>::identity();
+            }
+            if l + 1 == r {
+                return <<Action as MonoidAction>::Set as Monoid>::combine(
+                    self.point_query(l),
+                    &<<Action as MonoidAction>::Set as Monoid>::identity(),
+                );
+            }
+            [self.inner_index(l), self.inner_index(r)]
+        };
 
         // lazy propagation
         let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();

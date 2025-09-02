@@ -93,23 +93,24 @@ where
 
     /// Returns `[l, r)` on `self.data`.
     #[inline]
-    fn inner_range<R>(&self, range: R) -> [usize; 2]
+    fn translate_range<R>(&self, range: R) -> [usize; 2]
     where
         R: RangeBounds<usize>,
     {
         let l = match range.start_bound() {
-            std::ops::Bound::Included(l) => self.buf_len + l,
-            std::ops::Bound::Excluded(l) => self.buf_len + l + 1,
-            std::ops::Bound::Unbounded => self.buf_len,
+            std::ops::Bound::Included(l) => *l,
+            std::ops::Bound::Excluded(l) => l + 1,
+            std::ops::Bound::Unbounded => 0,
         };
         let r = match range.end_bound() {
-            std::ops::Bound::Included(r) => self.buf_len + r + 1,
-            std::ops::Bound::Excluded(r) => self.buf_len + r,
-            std::ops::Bound::Unbounded => self.data.len(),
+            std::ops::Bound::Included(r) => r + 1,
+            std::ops::Bound::Excluded(r) => *r,
+            std::ops::Bound::Unbounded => self.data_len,
         };
 
         [l, r]
     }
+
 
     fn push_map(&mut self, i: usize, map_ptr: usize) {
         if map_ptr != Self::NULL_MAP_PTR {
@@ -177,14 +178,17 @@ where
     where
         R: RangeBounds<usize>,
     {
-        let [l, r] = self.inner_range(range);
-        if l >= r {
-            return;
-        }
-        if l + 1 == r {
-            self.point_assign(l - self.buf_len, element);
-            return;
-        }
+        let [l, r] = {
+            let [l, r] = self.translate_range(range);
+            if l >= r {
+                return;
+            }
+            if l + 1 == r {
+                self.point_assign(l, element);
+                return;
+            }
+            [self.inner_index(l), self.inner_index(r)]
+        };
 
         // lazy propagation in top-to-bottom order
         let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
@@ -308,13 +312,16 @@ where
     where
         R: RangeBounds<usize>,
     {
-        let [l, r] = self.inner_range(range);
-        if l >= r {
-            return <Query as Monoid>::identity();
-        }
-        if l +1==r {
-            return self.point_query(l - self.buf_len).clone();
-        }
+        let [l, r] = {
+            let [l, r] = self.translate_range(range);
+            if l >= r {
+                return <Query as Monoid>::identity();
+            }
+            if l + 1 == r {
+                return self.point_query(l).clone();
+            }
+            [self.inner_index(l), self.inner_index(r)]
+        };
 
         // lazy propagation in top-to-bottom order
         let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
