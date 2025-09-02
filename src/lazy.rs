@@ -49,7 +49,6 @@ where
     ///
     /// *O*(*N*)
     #[inline]
-    #[must_use = "iterators are lazy and do nothing unless consumed"]
     pub fn iter(&mut self) -> std::slice::Iter<'_, <<Action as MonoidAction>::Set as Monoid>::Set> {
         self.propagate_all();
         self.recalculate_all();
