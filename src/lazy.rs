@@ -300,7 +300,7 @@ where
         let i = self.inner_index(i);
 
         // lazy propagation
-        for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
+        for d in (1..usize::BITS - i.leading_zeros()).rev() {
             self.propagate_at(i >> d);
         }
 
