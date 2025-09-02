@@ -323,8 +323,7 @@ where
         .into_boxed_slice();
 
         let lazy = Vec::from_iter(
-            std::iter::repeat_with(<<Action as MonoidAction>::Map as Monoid>::identity)
-                .take(n << 1),
+            std::iter::repeat_with(<<Action as MonoidAction>::Map as Monoid>::identity).take(n),
         )
         .into_boxed_slice();
 
@@ -369,7 +368,7 @@ where
 
             let lazy = Vec::from_iter(
                 std::iter::repeat_with(<<Action as MonoidAction>::Map as Monoid>::identity)
-                    .take(min << 1),
+                    .take(min),
             )
             .into_boxed_slice();
 
