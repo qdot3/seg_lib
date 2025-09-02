@@ -160,7 +160,7 @@ where
         if l >= r {
             return;
         }
-        if l ^ r == 1 {
+        if l + 1 == r {
             self.point_update(l - self.data.len() / 2, update);
             return;
         }

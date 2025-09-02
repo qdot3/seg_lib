@@ -1,11 +1,13 @@
-use crate::traits::{Monoid, QuasiMonoidAction};
+use crate::{Monoid, QuasiMonoidAction};
 
 /// UNDER CONSTRUCTION
-pub struct SegmentTreeBeats<Query, Update>
+pub struct SegmentTreeBeats<Function>
 where
-    Query: Monoid,
-    Update: Monoid + QuasiMonoidAction<Map = Query, Set = Update>,
+    Function: QuasiMonoidAction,
 {
-    data: Box<[<Query as Monoid>::Set]>,
-    lazy: Box<[<Update as Monoid>::Set]>,
+    data: Box<[<<Function as QuasiMonoidAction>::Set as Monoid>::Set]>,
+    lazy: Box<[<<Function as QuasiMonoidAction>::Map as Monoid>::Set]>,
+
+    /// calculate if [`MonoidAction::USE_SEGMENT_SIZE`] is `true`.
+    segment_size: Option<Box<[usize]>>,
 }

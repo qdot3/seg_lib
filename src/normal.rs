@@ -207,7 +207,7 @@ where
             return <Query as Monoid>::identity();
         }
         // l + 1 == r because l < r except when overflow occurs
-        if l ^ r == 1 {
+        if l + 1 == r {
             return <Query as Monoid>::combine(&<Query as Monoid>::identity(), &self.data[l]);
         }
 

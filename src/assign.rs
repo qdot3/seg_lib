@@ -181,7 +181,7 @@ where
         if l >= r {
             return;
         }
-        if l ^ r == 1 {
+        if l + 1 == r {
             self.point_assign(l - self.buf_len, element);
             return;
         }
@@ -312,7 +312,7 @@ where
         if l >= r {
             return <Query as Monoid>::identity();
         }
-        if l ^ r == 1 {
+        if l +1==r {
             return self.point_query(l - self.buf_len).clone();
         }
 
