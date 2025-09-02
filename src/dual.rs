@@ -160,11 +160,10 @@ where
         if l >= r {
             return;
         }
-        // // l + 1 == r
-        // if l ^ r == 1 {
-        //     self.point_update(l, update);
-        //     return;
-        // }
+        if l ^ r == 1 {
+            self.point_update(l, update);
+            return;
+        }
 
         let [l, r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
         // lazy propagation in top-to-bottom order

@@ -17,7 +17,6 @@ where
 
     /// `n.next_power_of_2()`
     buf_len: usize,
-
     /// n
     data_len: usize,
 }
