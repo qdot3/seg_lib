@@ -20,9 +20,6 @@ where
 
     /// n
     data_len: usize,
-
-    // for debug
-    query: PhantomData<Query>,
 }
 
 impl<Query> AssignSegmentTree<Query>
@@ -37,6 +34,14 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{AssignSegmentTree, ops::LCM};
+    ///
+    /// let ast = AssignSegmentTree::<LCM<i32>>::new(100);
+    /// ```
     #[inline]
     pub fn new(n: usize) -> Self {
         Self::from_iter(std::iter::repeat_n(<Query as Monoid>::identity(), n))
@@ -47,6 +52,15 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{AssignSegmentTree, ops::Max};
+    ///
+    /// let ast = AssignSegmentTree::<Max<i32>>::new(100);
+    /// assert_eq!(ast.len(), 100);
+    /// ```
     #[allow(clippy::len_without_is_empty)]
     #[inline]
     pub fn len(&self) -> usize {
@@ -58,7 +72,15 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
-    #[must_use = "iterators are lazy and do nothing unless consumed"]
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{AssignSegmentTree, ops::Min};
+    ///
+    /// let mut ast = AssignSegmentTree::<Min<i32>>::new(100);
+    /// assert!(ast.iter().all(|e| e.is_none()));
+    /// ```
     pub fn iter(&mut self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
         self.propagate_all();
         self.recalculate_all();
@@ -67,7 +89,7 @@ where
 
     #[inline]
     fn inner_index(&self, i: usize) -> usize {
-        self.data_len + i
+        self.buf_len + i
     }
 
     /// Returns `[l, r)` on `self.data`.
@@ -140,6 +162,18 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{AssignSegmentTree, ops::Add};
+    ///
+    /// let mut ast = AssignSegmentTree::<Add<i32>>::from_iter(0..100);
+    /// assert_eq!(ast.range_query(..), 99 * 100 / 2);
+    ///
+    /// ast.range_assign(.., 1);
+    /// assert!(ast.iter().all(|e| *e == 1))
+    /// ```
     pub fn range_assign<R>(&mut self, range: R, element: <Query as Monoid>::Set)
     where
         R: RangeBounds<usize>,
@@ -148,10 +182,10 @@ where
         if l >= r {
             return;
         }
-        // if l ^ r == 1 {
-        //     self.point_assign(l - self.buf_len, element);
-        //     return;
-        // }
+        if l ^ r == 1 {
+            self.point_assign(l - self.buf_len, element);
+            return;
+        }
 
         // lazy propagation in top-to-bottom order
         let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
@@ -218,6 +252,19 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{AssignSegmentTree, ops::BitOr};
+    ///
+    /// let mut ast = AssignSegmentTree::<BitOr<u32>>::from(vec![0; 100]);
+    /// assert_eq!(ast.range_query(..), 0);
+    ///
+    /// ast.point_assign(50, 999);
+    /// ast.point_assign(50, 99);
+    /// assert_eq!(ast.point_query(50), &99);
+    /// ```
     pub fn point_assign(&mut self, i: usize, element: <Query as Monoid>::Set) {
         let i = self.inner_index(i);
 
@@ -242,6 +289,22 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{AssignSegmentTree, ops::Mul};
+    ///
+    /// let mut ast = AssignSegmentTree::<Mul<i32>>::new(100);
+    /// assert_eq!(ast.range_query(..), 1);
+    ///
+    /// ast.point_assign(20, 2);
+    /// ast.point_assign(30, 3);
+    /// assert_eq!(ast.range_query(..), 2 * 3);
+    ///
+    /// ast.point_assign(30, 30);
+    /// assert_eq!(ast.range_query(20..=30), 2 * 30);
+    /// ```
     pub fn range_query<R>(&mut self, range: R) -> <Query as Monoid>::Set
     where
         R: RangeBounds<usize>,
@@ -250,9 +313,9 @@ where
         if l >= r {
             return <Query as Monoid>::identity();
         }
-        // if l ^ r == 1 {
-        //     return self.point_query(l - self.buf_len).clone();
-        // }
+        if l ^ r == 1 {
+            return self.point_query(l - self.buf_len).clone();
+        }
 
         // lazy propagation in top-to-bottom order
         let diff = usize::BITS - (l ^ (r - 1)).leading_zeros();
@@ -290,6 +353,18 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{AssignSegmentTree, ops::Add};
+    ///
+    /// let mut ast = AssignSegmentTree::<Add<i32>>::from_iter(0..100);
+    /// assert_eq!(ast.point_query(50), &50);
+    ///
+    /// ast.range_assign(.., 0);
+    /// assert_eq!(ast.point_query(50), &0);
+    /// ```
     pub fn point_query(&mut self, i: usize) -> &<Query as Monoid>::Set {
         let i = self.inner_index(i);
 
@@ -325,7 +400,6 @@ where
             lazy_map: Vec::with_capacity(buf_len + (n | 1).ilog2() as usize),
             buf_len,
             data_len: n,
-            query: PhantomData,
         };
         ast.recalculate_all();
         ast
@@ -357,7 +431,6 @@ where
                 lazy_map: Vec::with_capacity(buf_len + (min | 1).ilog2() as usize),
                 buf_len,
                 data_len: min,
-                query: PhantomData,
             };
             ast.recalculate_all();
             ast
@@ -379,7 +452,6 @@ where
             .field("lazy_map", &self.lazy_map)
             .field("buf_len", &self.buf_len)
             .field("data_len", &self.data_len)
-            .field("query", &self.query)
             .finish()
     }
 }
@@ -396,7 +468,6 @@ where
             lazy_map: self.lazy_map.clone(),
             buf_len: self.buf_len,
             data_len: self.data_len,
-            query: self.query,
         }
     }
 }
