@@ -21,6 +21,14 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{DualSegmentTree, ops::Mul};
+    ///
+    /// let dst = DualSegmentTree::<Mul<i32>>::new(100);
+    /// ```
     #[inline]
     pub fn new(n: usize) -> Self {
         let data =
@@ -38,6 +46,15 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{DualSegmentTree, ops::Affine};
+    ///
+    /// let dst = DualSegmentTree::<Affine<i32>>::new(100);
+    /// assert_eq!(dst.len(), 100);
+    /// ```
     #[allow(clippy::len_without_is_empty)]
     #[inline]
     pub fn len(&self) -> usize {
@@ -49,7 +66,15 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
-    #[must_use = "iterators are lazy and do nothing unless consumed"]
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{DualSegmentTree, ops::BitXor};
+    ///
+    /// let mut dst = DualSegmentTree::<BitXor<u32>>::new(100);
+    /// assert!(dst.iter().all(|e| *e == 0));
+    /// ```
     pub fn iter(&mut self) -> std::slice::Iter<'_, <Update as Monoid>::Set> {
         self.propagate_all();
         self.data[self.data.len() >> 1..].iter()
@@ -112,6 +137,20 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{DualSegmentTree, ops::Add};
+    ///
+    /// let mut dst = DualSegmentTree::<Add<i32>>::new(100);
+    /// assert_eq!(dst.point_query(50), 0);
+    ///
+    /// dst.range_update(.., &100);
+    /// dst.range_update(50.., &50);
+    /// assert_eq!(dst.point_query(50), 150);
+    /// assert_eq!(dst.point_query(40), 100);
+    /// ```
     pub fn range_update<R>(&mut self, range: R, update: &<Update as Monoid>::Set)
     where
         R: RangeBounds<usize>,
@@ -163,6 +202,19 @@ where
     /// |--------------------------------------------------------|--------------|
     /// | [`true`]                                               | *O*(1)       |
     /// | [`false`]                                              | *O*(log *N*) |
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{DualSegmentTree, ops::GCD};
+    ///
+    /// let mut dst = DualSegmentTree::<GCD<i32>>::new(100);
+    /// assert_eq!(dst.point_query(50), 0);
+    ///
+    /// dst.point_update(50, &(2 * 3 * 5));
+    /// dst.point_update(50, &(3 * 5 * 7));
+    /// assert_eq!(dst.point_query(50), 3 * 5);
+    /// ```
     pub fn point_update(&mut self, i: usize, update: &<Update as Monoid>::Set) {
         let i = self.inner_index(i);
 
@@ -181,6 +233,15 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{DualSegmentTree, ops::LCM};
+    ///
+    /// let dst = DualSegmentTree::<LCM<i32>>::new(100);
+    /// assert_eq!(dst.point_query(50), 1);
+    /// ```
     pub fn point_query(&self, i: usize) -> <Update as Monoid>::Set {
         let mut i = self.inner_index(i);
         let mut res = <Update as Monoid>::identity();
@@ -198,6 +259,17 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{DualSegmentTree, ops::BitAnd};
+    ///
+    /// let dst = DualSegmentTree::<BitAnd<i32>>::new(100);
+    /// assert_eq!(dst.point_query(50), !0);
+    /// assert_eq!(dst.point_query_with(50, |e| e & 5), 5);
+    /// assert_eq!(dst.point_query_with(50, |e| e & 6), 6);
+    /// ```
     pub fn point_query_with<F, T>(&self, i: usize, f: F) -> T
     where
         F: FnOnce(<Update as Monoid>::Set) -> T,

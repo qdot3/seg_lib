@@ -408,7 +408,7 @@ where
     /// dst.point_update(-30, 7);
     ///
     /// assert_eq!(dst.range_query(..), 9 & 3 & 7);
-    /// assert_eq!(dst.range_query(0..), 1);
+    /// assert_eq!(dst.range_query(0..), !0);
     /// assert_eq!(dst.range_query(..=-40), 9 & 3);
     /// ```
     pub fn point_query(&self, i: isize) -> <Query as Monoid>::Set {
