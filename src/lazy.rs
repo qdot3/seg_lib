@@ -4,10 +4,11 @@ use crate::traits::{Monoid, MonoidAction};
 
 /// A data structure that supports **range query range update** operations.
 // ANCHOR: definition
-pub struct LazySegmentTree<Query, Update>
+pub struct LazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
+    Action: MonoidAction<Set = Query, Map = Update>,
 {
     data: Box<[<Query as Monoid>::Set]>,
     lazy: Box<[<Update as Monoid>::Set]>,
@@ -18,13 +19,15 @@ where
     // for debug
     query: PhantomData<Query>,
     update: PhantomData<Update>,
+    action: PhantomData<Action>,
 }
 // ANCHOR_END: definition
 
-impl<Query, Update> LazySegmentTree<Query, Update>
+impl<Query, Update, Action> LazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
+    Action: MonoidAction<Set = Query, Map = Update>,
 {
     /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
     ///
@@ -90,7 +93,7 @@ where
             .segment_size
             .as_ref()
             .map(|segment_size| segment_size.get(i).copied().unwrap_or(1));
-        self.data[i] = <Update as MonoidAction>::act(update, &self.data[i], size);
+        self.data[i] = <Action as MonoidAction>::act(update, &self.data[i], size);
 
         if let Some(lazy) = self.lazy.get_mut(i) {
             *lazy = <Update as Monoid>::combine(lazy, update)
@@ -282,10 +285,12 @@ where
     }
 }
 
-impl<Query, Update> From<Vec<<Query as Monoid>::Set>> for LazySegmentTree<Query, Update>
+impl<Query, Update, Action> From<Vec<<Query as Monoid>::Set>>
+    for LazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
+    Action: MonoidAction<Set = Query, Map = Update>,
 {
     fn from(values: Vec<<Query as Monoid>::Set>) -> Self {
         let n = values.len();
@@ -301,7 +306,7 @@ where
             Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(n << 1))
                 .into_boxed_slice();
 
-        let segment_size = <Update as MonoidAction>::USE_SEGMENT_SIZE.then(|| {
+        let segment_size = <Action as MonoidAction>::USE_SEGMENT_SIZE.then(|| {
             let mut segment_size =
                 Vec::from_iter(std::iter::repeat_n(0, n).chain(std::iter::repeat_n(1, n)));
             for i in (1..n).rev() {
@@ -318,16 +323,19 @@ where
             segment_size,
             query: PhantomData,
             update: PhantomData,
+            action: PhantomData,
         };
         lst.recalculate_all();
         lst
     }
 }
 
-impl<Query, Update> FromIterator<<Query as Monoid>::Set> for LazySegmentTree<Query, Update>
+impl<Query, Update, Action> FromIterator<<Query as Monoid>::Set>
+    for LazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
+    Action: MonoidAction<Set = Query, Map = Update>,
 {
     fn from_iter<T: IntoIterator<Item = <Query as Monoid>::Set>>(iter: T) -> Self {
         let iter = iter.into_iter();
@@ -344,7 +352,7 @@ where
                 Vec::from_iter(std::iter::repeat_with(<Update as Monoid>::identity).take(min << 1))
                     .into_boxed_slice();
 
-            let segment_size = <Update as MonoidAction>::USE_SEGMENT_SIZE.then(|| {
+            let segment_size = <Action as MonoidAction>::USE_SEGMENT_SIZE.then(|| {
                 let mut segment_size =
                     Vec::from_iter(std::iter::repeat_n(0, min).chain(std::iter::repeat_n(1, min)));
                 for i in (1..min).rev() {
@@ -361,6 +369,7 @@ where
                 segment_size,
                 query: PhantomData,
                 update: PhantomData,
+                action: PhantomData,
             };
             lst.recalculate_all();
             lst
@@ -370,12 +379,13 @@ where
     }
 }
 
-impl<Query, Update> Debug for LazySegmentTree<Query, Update>
+impl<Query, Update, Action> Debug for LazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
     <Query as Monoid>::Set: Debug,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
     <Update as Monoid>::Set: Debug,
+    Action: MonoidAction<Set = Query, Map = Update>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LazySegmentTree")
@@ -388,12 +398,13 @@ where
     }
 }
 
-impl<Query, Update> Clone for LazySegmentTree<Query, Update>
+impl<Query, Update, Action> Clone for LazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
     <Query as Monoid>::Set: Clone,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
     <Update as Monoid>::Set: Clone,
+    Action: MonoidAction<Set = Query, Map = Update>,
 {
     fn clone(&self) -> Self {
         Self {
@@ -402,6 +413,7 @@ where
             segment_size: self.segment_size.clone(),
             query: self.query,
             update: self.update,
+            action: self.action,
         }
     }
 }

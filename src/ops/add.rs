@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use num_traits::Zero;
 
-use crate::traits::Monoid;
+use crate::{MonoidAction, traits::Monoid};
 
 /// Represents `+` operation.
 // ANCHOR: def_and_impl_monoid
@@ -26,3 +26,23 @@ where
     }
 }
 // ANCHOR_END: def_and_impl_monoid
+
+impl<T> MonoidAction for (Add<T>, Add<T>)
+where
+    T: Zero,
+    for<'a> &'a T: std::ops::Add<Output = T>,
+{
+    type Map = Add<T>;
+
+    type Set = Add<T>;
+
+    const USE_SEGMENT_SIZE: bool = true;
+
+    fn act(
+        mapping: &<Self::Map as Monoid>::Set,
+        element: &<Self::Set as Monoid>::Set,
+        size: Option<usize>,
+    ) -> <Self::Set as Monoid>::Set {
+        todo!()
+    }
+}

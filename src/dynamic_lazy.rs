@@ -8,10 +8,11 @@ use std::{
 use crate::traits::{Monoid, MonoidAction};
 
 /// A data structure that supports **range query range update** operations on large array.
-pub struct DynamicLazySegmentTree<Query, Update>
+pub struct DynamicLazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
+    Action: MonoidAction<Map = Update, Set = Query>,
 {
     arena: Vec<Node<Query, Update>>,
     range: Range<isize>,
@@ -22,12 +23,14 @@ where
     // for debug
     query: PhantomData<Query>,
     update: PhantomData<Update>,
+    action: PhantomData<Action>,
 }
 
-impl<Query, Update> DynamicLazySegmentTree<Query, Update>
+impl<Query, Update, Action> DynamicLazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
+    Action: MonoidAction<Map = Update, Set = Query>,
 {
     /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
     ///
@@ -45,6 +48,7 @@ where
                 range,
                 query: PhantomData,
                 update: PhantomData,
+                action: PhantomData,
             })
         }
     }
@@ -74,6 +78,7 @@ where
                 reusable_buf: Vec::with_capacity(height << 2),
                 query: PhantomData,
                 update: PhantomData,
+                action: PhantomData,
             })
         }
     }
@@ -113,7 +118,7 @@ where
         assert!(!range.is_empty(), "invalid node");
         let node = &mut self.arena[ptr];
 
-        node.element = <Update as MonoidAction>::act(update, &node.element, Some(range.len()));
+        node.element = <Action as MonoidAction>::act(update, &node.element, Some(range.len()));
         node.update = <Update as Monoid>::combine(&node.update, update)
     }
 
@@ -279,12 +284,13 @@ where
     }
 }
 
-impl<Query, Update> Debug for DynamicLazySegmentTree<Query, Update>
+impl<Query, Update, Action> Debug for DynamicLazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
     <Query as Monoid>::Set: Debug,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
     <Update as Monoid>::Set: Debug,
+    Action: MonoidAction<Map = Update, Set = Query>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DynamicLazySegmentTree")
@@ -297,12 +303,13 @@ where
     }
 }
 
-impl<Query, Update> Clone for DynamicLazySegmentTree<Query, Update>
+impl<Query, Update, Action> Clone for DynamicLazySegmentTree<Query, Update, Action>
 where
     Query: Monoid,
     <Query as Monoid>::Set: Clone,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
     <Update as Monoid>::Set: Clone,
+    Action: MonoidAction<Map = Update, Set = Query>,
 {
     fn clone(&self) -> Self {
         Self {
@@ -311,6 +318,7 @@ where
             reusable_buf: self.reusable_buf.clone(),
             query: self.query,
             update: self.update,
+            action: PhantomData,
         }
     }
 }
@@ -318,7 +326,7 @@ where
 struct Node<Query, Update>
 where
     Query: Monoid,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
 {
     element: <Query as Monoid>::Set,
     update: <Update as Monoid>::Set,
@@ -331,7 +339,7 @@ where
 impl<Query, Update> Node<Query, Update>
 where
     Query: Monoid,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
 {
     #[inline]
     fn new() -> Self {
@@ -370,7 +378,7 @@ impl<Query, Update> Debug for Node<Query, Update>
 where
     Query: Monoid,
     <Query as Monoid>::Set: Debug,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
     <Update as Monoid>::Set: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -387,7 +395,7 @@ impl<Query, Update> Clone for Node<Query, Update>
 where
     Query: Monoid,
     <Query as Monoid>::Set: Clone,
-    Update: Monoid + MonoidAction<Map = Update, Set = Query>,
+    Update: Monoid,
     <Update as Monoid>::Set: Clone,
 {
     fn clone(&self) -> Self {
