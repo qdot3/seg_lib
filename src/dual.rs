@@ -161,7 +161,7 @@ where
             return;
         }
         if l ^ r == 1 {
-            self.point_update(l, update);
+            self.point_update(l - self.data.len() / 2, update);
             return;
         }
 
