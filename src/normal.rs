@@ -1,4 +1,4 @@
-use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
+use std::{fmt::Debug, ops::RangeBounds};
 
 use crate::traits::Monoid;
 
@@ -14,9 +14,6 @@ where
     /// - data\[1..n\] : nodes to store the combined value of the children.
     /// - data\[n..2n\]: nodes to store value for each cell.
     data: Box<[<Query as Monoid>::Set]>,
-
-    // for debug
-    query: PhantomData<Query>,
 }
 // ANCHOR_END: definition
 
@@ -42,10 +39,7 @@ where
         let data = Vec::from_iter(std::iter::repeat_with(<Query as Monoid>::identity).take(n << 1))
             .into_boxed_slice();
 
-        Self {
-            data,
-            query: PhantomData,
-        }
+        Self { data }
     }
 
     /// Returns the number of elements.
@@ -275,10 +269,7 @@ where
             data[i] = <Query as Monoid>::combine(&data[i * 2], &data[i * 2 + 1])
         }
 
-        Self {
-            data,
-            query: PhantomData,
-        }
+        Self { data }
     }
 }
 
@@ -301,10 +292,7 @@ where
                 data[i] = <Query as Monoid>::combine(&data[i * 2], &data[i * 2 + 1])
             }
 
-            Self {
-                data,
-                query: PhantomData,
-            }
+            Self { data }
         } else {
             Self::from(Vec::from_iter(iter))
         }
@@ -319,7 +307,6 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SegmentTree")
             .field("data", &self.data)
-            .field("query", &self.query)
             .finish()
     }
 }
@@ -332,7 +319,6 @@ where
     fn clone(&self) -> Self {
         Self {
             data: self.data.clone(),
-            query: self.query,
         }
     }
 }

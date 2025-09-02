@@ -1,6 +1,5 @@
 use std::{
     fmt::Debug,
-    marker::PhantomData,
     num::NonZeroUsize,
     ops::{Range, RangeBounds},
 };
@@ -18,9 +17,6 @@ where
 
     // save allocation cost
     reusable_stack: Vec<usize>,
-
-    // for debug
-    query: PhantomData<Query>,
 }
 // ANCHOR_END: definition
 
@@ -52,7 +48,6 @@ where
                 arena: Vec::new(),
                 range,
                 reusable_stack: Vec::new(),
-                query: PhantomData,
             })
         }
     }
@@ -88,7 +83,6 @@ where
                     range.len().ilog2() as usize + 1,
                 ),
                 range,
-                query: PhantomData,
             })
         }
     }
@@ -452,7 +446,6 @@ where
             .field("data", &self.arena)
             .field("range", &self.range)
             .field("reusable_stack", &self.reusable_stack)
-            .field("query", &self.query)
             .finish()
     }
 }
@@ -467,7 +460,6 @@ where
             arena: self.arena.clone(),
             range: self.range.clone(),
             reusable_stack: self.reusable_stack.clone(),
-            query: self.query,
         }
     }
 }

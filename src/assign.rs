@@ -1,4 +1,4 @@
-use std::{fmt::Debug, marker::PhantomData, ops::RangeBounds};
+use std::{fmt::Debug, ops::RangeBounds};
 
 use crate::traits::Monoid;
 

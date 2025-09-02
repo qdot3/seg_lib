@@ -16,7 +16,6 @@ where
 
     // save allocation cost
     reusable_buf: Vec<(usize, Range<isize>)>,
-    // for debug
 }
 
 impl<Action> DynamicLazySegmentTree<Action>
