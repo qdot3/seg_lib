@@ -8,7 +8,7 @@ where
     Query: Monoid,
     <Query as Monoid>::Set: Clone,
 {
-    /// the length is `buf_len + n | 1`
+    /// the length is `buf_len + n + (n & 1)`, which is even number.
     data: Box<[<Query as Monoid>::Set]>,
     /// the length is `data.len() / 2`
     lazy_ptr: Box<[usize]>,
