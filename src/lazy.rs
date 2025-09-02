@@ -218,7 +218,7 @@ where
 
         // lazy propagation
         if !<<Action as MonoidAction>::Map as Monoid>::IS_COMMUTATIVE {
-            for d in (i.trailing_zeros() + 1..usize::BITS - i.leading_zeros()).rev() {
+            for d in (1..usize::BITS - i.leading_zeros()).rev() {
                 self.propagate_at(i >> d);
             }
         }
@@ -226,7 +226,7 @@ where
         self.push_map(i, update);
 
         // recalculate
-        for d in i.trailing_zeros() + 1..usize::BITS - i.leading_zeros() {
+        for d in 1..usize::BITS - i.leading_zeros() {
             self.recalculate_at(i >> d);
         }
     }

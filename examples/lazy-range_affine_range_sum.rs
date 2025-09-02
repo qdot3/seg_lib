@@ -10,6 +10,8 @@ fn main() {
     input! { n: usize, q: usize, a: [u64; n], }
 
     let mut lst = LazySegmentTree::<RangeAddRangeAffine<MOD>>::from(a);
+    #[cfg(debug_assertions)]
+    eprintln!("{lst:?}");
 
     for _ in 0..q {
         input! { flag: u8, }

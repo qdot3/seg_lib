@@ -111,7 +111,6 @@ where
         [l, r]
     }
 
-
     fn push_map(&mut self, i: usize, map_ptr: usize) {
         if map_ptr != Self::NULL_MAP_PTR {
             self.data[i] = self.lazy_map[map_ptr].clone();

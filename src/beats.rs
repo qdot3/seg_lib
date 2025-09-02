@@ -12,6 +12,9 @@ where
     segment_size: Option<Box<[usize]>>,
 }
 
-impl<Function> SegmentTreeBeats<Function> where Function: QuasiMonoidAction {
+impl<Function> SegmentTreeBeats<Function>
+where
+    Function: QuasiMonoidAction,
+{
     pub fn range_update(&mut self) {}
 }
