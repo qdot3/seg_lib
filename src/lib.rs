@@ -58,5 +58,7 @@ mod beats;
 
 pub mod ops;
 
+pub mod acts;
+
 mod traits;
 pub use traits::{Monoid, MonoidAction, QuasiMonoidAction};
