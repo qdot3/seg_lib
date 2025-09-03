@@ -89,7 +89,7 @@ let (combined, n) = dst.range_query(/* sub range */);
 
 ### 更新クエリ
 
-![range update](dynamic_ru.drawio.svg)
+![range update](dynamic_pu.drawio.svg)
 
 あるノードに対応する区間で2つめのノードが更新される場合、新たにノードを作成する必要があります。
 このとき、`左の子のインデックス < 親のインデックス < 右の子のインデックス`の関係を保持する必要があります。
