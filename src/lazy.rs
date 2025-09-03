@@ -25,6 +25,14 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{LazySegmentTree, acts::MaxQueryAddUpdate};
+    ///
+    /// let lst = LazySegmentTree::<MaxQueryAddUpdate<i32>>::new(100);
+    /// ```
     #[inline]
     pub fn new(n: usize) -> Self {
         Self::from_iter(
@@ -37,6 +45,15 @@ where
     /// # Time complexity
     ///
     /// *O*(1)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{LazySegmentTree, acts::MaxQueryAddUpdate};
+    ///
+    /// let lst = LazySegmentTree::<MaxQueryAddUpdate<i32>>::new(100);
+    /// assert_eq!(lst.len(), 100);
+    /// ```
     #[allow(clippy::len_without_is_empty)]
     #[inline]
     pub fn len(&self) -> usize {
@@ -48,11 +65,20 @@ where
     /// # Time complexity
     ///
     /// *O*(*N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{LazySegmentTree, acts::MaxQueryAddUpdate};
+    ///
+    /// let mut lst = LazySegmentTree::<MaxQueryAddUpdate<i32>>::new(100);
+    /// assert!(lst.iter().all(|v| v.is_none()));
+    /// ```
     #[inline]
     pub fn iter(&mut self) -> std::slice::Iter<'_, <<Action as MonoidAction>::Set as Monoid>::Set> {
         self.propagate_all();
         self.recalculate_all();
-        self.data[self.data.len()..].iter()
+        self.data[self.data.len() >> 1..].iter()
     }
 
     #[inline]
@@ -138,6 +164,23 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{LazySegmentTree, acts::MaxQueryAddUpdate};
+    ///
+    /// let mut lst = LazySegmentTree::<MaxQueryAddUpdate<i32>>::from_iter(
+    ///     std::iter::repeat_n(Some(0), 100)
+    /// );
+    /// assert_eq!(lst.range_query(..), Some(0));
+    ///
+    /// lst.range_update(..75, &100);
+    /// lst.range_update(25.., &110);
+    /// assert_eq!(lst.range_query(..25), Some(100));
+    /// assert_eq!(lst.range_query(..), Some(210));
+    /// assert_eq!(lst.range_query(75..), Some(110));
+    /// ```
     pub fn range_update<R>(
         &mut self,
         range: R,
@@ -209,6 +252,22 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{LazySegmentTree, acts::MaxQueryAddUpdate};
+    ///
+    /// let mut lst = LazySegmentTree::<MaxQueryAddUpdate<i32>>::from_iter(
+    ///     std::iter::repeat_n(Some(0), 100)
+    /// );
+    /// assert_eq!(lst.range_query(..), Some(0));
+    ///
+    /// lst.point_update(25, &10);
+    /// lst.point_update(75, &20);
+    /// assert_eq!(lst.range_query(..), Some(20));
+    /// assert_eq!(lst.range_query(..50), Some(10))
+    /// ```
     pub fn point_update(
         &mut self,
         i: usize,
@@ -238,6 +297,20 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{LazySegmentTree, acts::MaxQueryAddUpdate};
+    ///
+    /// let mut lst = LazySegmentTree::<MaxQueryAddUpdate<i32>>::from_iter(
+    ///     (0..100).map(|v| Some(v))
+    /// );
+    /// assert_eq!(lst.range_query(..), Some(99));
+    /// assert_eq!(lst.range_query(..50), Some(49));
+    /// assert_eq!(lst.range_query(..=50), Some(50));
+    /// assert_eq!(lst.range_query(50..), Some(99));
+    /// ```
     pub fn range_query<R>(&mut self, range: R) -> <<Action as MonoidAction>::Set as Monoid>::Set
     where
         R: RangeBounds<usize>,
@@ -296,6 +369,20 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use seg_lib::{LazySegmentTree, acts::MaxQueryAddUpdate};
+    ///
+    /// let mut lst = LazySegmentTree::<MaxQueryAddUpdate<i32>>::from_iter(
+    ///     (0..100).map(|v| Some(v))
+    /// );
+    /// 
+    /// for i in 0..100 {
+    ///     assert_eq!(lst.point_query(i), &Some(i as i32))
+    /// }
+    /// ```
     pub fn point_query(&mut self, i: usize) -> &<<Action as MonoidAction>::Set as Monoid>::Set {
         let i = self.inner_index(i);
 
