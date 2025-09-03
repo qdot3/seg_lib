@@ -111,7 +111,7 @@ pub trait QuasiMonoidAction {
     ///
     /// You can access segment size if you want.
     /// This is equivalent to attaching the segment size information to [`Self::Set`] but more performant.
-    #[must_use = "this function may fail"]
+    #[allow(clippy::result_unit_err)]
     fn try_act(
         mapping: &<Self::Map as Monoid>::Set,
         element: &<Self::Set as Monoid>::Set,
