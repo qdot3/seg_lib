@@ -23,5 +23,9 @@ rand = "0.9.2"
 name = "segment_tree"
 doc-scrape-examples = true
 
+[[example]]
+name = "dynamic_lazy"
+doc-scrape-examples = true
+
 [package.metadata.docs.rs]
 cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
