@@ -5,6 +5,7 @@ use num_integer::Integer;
 use crate::traits::Monoid;
 
 /// Represents `lcm` operation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LCM<T>(PhantomData<T>);
 
 impl<T> Monoid for LCM<T>

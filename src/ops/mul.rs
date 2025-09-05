@@ -5,6 +5,7 @@ use num_traits::One;
 use crate::traits::Monoid;
 
 /// Represents `*` operation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Mul<T>(PhantomData<T>);
 
 impl<T> Monoid for Mul<T>

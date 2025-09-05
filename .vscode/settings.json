@@ -3,6 +3,7 @@
         "chmax",
         "chmin",
         "dlst",
+        "maspy",
         "mathbb",
         "Zrustdoc",
         "Zunstable"

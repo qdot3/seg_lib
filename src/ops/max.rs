@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use crate::traits::Monoid;
 
 /// Represents `chmax` operation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Max<T>(PhantomData<T>);
 
 impl<T> Monoid for Max<T>

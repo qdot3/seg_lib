@@ -5,7 +5,9 @@ use num_traits::Zero;
 use crate::traits::Monoid;
 
 /// Represents `&` operation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitAnd<T>(PhantomData<T>);
+
 impl<T> Monoid for BitAnd<T>
 where
     T: Zero + std::ops::Not<Output = T>,

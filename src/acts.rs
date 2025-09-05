@@ -21,6 +21,7 @@ where
     T::from_usize(size).expect("the Set should be large enough to represent segment size.")
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryAddUpdate<T>(PhantomData<T>);
 
 impl<T> MonoidAction for AddQueryAddUpdate<T>
@@ -46,6 +47,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryAffineUpdate<T>(PhantomData<T>);
 
 impl<T> MonoidAction for AddQueryAffineUpdate<T>
@@ -71,6 +73,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryMulUpdate<T>(PhantomData<T>);
 
 impl<T> MonoidAction for AddQueryMulUpdate<T>
@@ -92,6 +95,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GCDQueryMulUpdate<T>(PhantomData<T>);
 
 impl<T> MonoidAction for GCDQueryMulUpdate<T>
@@ -113,6 +117,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LCMQueryMulUpdate<T>(PhantomData<T>);
 
 impl<T> MonoidAction for LCMQueryMulUpdate<T>
@@ -134,6 +139,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MaxQueryAddUpdate<T>(PhantomData<T>);
 
 impl<T> MonoidAction for MaxQueryAddUpdate<T>
@@ -155,6 +161,7 @@ where
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MinQueryAddUpdate<T>(PhantomData<T>);
 
 impl<T> MonoidAction for MinQueryAddUpdate<T>

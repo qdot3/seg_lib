@@ -5,6 +5,7 @@ use num_traits::{One, Zero};
 use crate::traits::Monoid;
 
 /// Represents affine transformation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Affine<T>(PhantomData<T>);
 
 impl<T> Monoid for Affine<T>
