@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::{Monoid, ops::Assign};
 
 pub enum AssignOr<M>
@@ -40,6 +42,32 @@ where
             (AssignOr::Other(lhs_or_prev), AssignOr::Other(rhs_or_new)) => {
                 Self::Other(<M as Monoid>::combine(lhs_or_prev, rhs_or_new))
             }
+        }
+    }
+}
+
+impl<M> Debug for AssignOr<M>
+where
+    M: Monoid,
+    <M as Monoid>::Set: Debug + Clone,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Assign(arg0) => f.debug_tuple("Assign").field(arg0).finish(),
+            Self::Other(arg0) => f.debug_tuple("Other").field(arg0).finish(),
+        }
+    }
+}
+
+impl<M> Clone for AssignOr<M>
+where
+    M: Monoid,
+    <M as Monoid>::Set: Clone,
+{
+    fn clone(&self) -> Self {
+        match self {
+            Self::Assign(arg0) => Self::Assign(arg0.clone()),
+            Self::Other(arg0) => Self::Other(arg0.clone()),
         }
     }
 }
