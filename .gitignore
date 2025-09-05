@@ -2,4 +2,3 @@
 /.vscode
 /.markdownlint.json
 Cargo.lock
-rust-toolchain.toml

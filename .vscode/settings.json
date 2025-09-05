@@ -3,6 +3,8 @@
         "chmax",
         "chmin",
         "dlst",
-        "mathbb"
+        "mathbb",
+        "Zrustdoc",
+        "Zunstable"
     ]
 }
