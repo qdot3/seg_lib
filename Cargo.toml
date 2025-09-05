@@ -20,11 +20,11 @@ proconio = { version = "0.5.0", features = ["derive"] }
 rand = "0.9.2"
 
 [[example]]
-name = "segment_tree"
+name = "ex_segment_tree"
 doc-scrape-examples = true
 
 [[example]]
-name = "dynamic_lazy"
+name = "ex_dynamic_lazy"
 doc-scrape-examples = true
 
 [package.metadata.docs.rs]
