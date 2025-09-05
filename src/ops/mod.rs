@@ -51,6 +51,9 @@ pub use min::Min;
 mod assign;
 pub use assign::Assign;
 
+mod assign_or;
+pub use assign_or::AssignOr;
+
 mod affine;
 pub use affine::Affine;
 

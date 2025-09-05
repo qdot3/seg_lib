@@ -56,9 +56,9 @@ pub use assign::AssignSegmentTree;
 mod beats;
 // pub use beats::SegmentTreeBeats;
 
-pub mod ops;
-
 pub mod acts;
+
+pub mod ops;
 
 mod traits;
 pub use traits::{Monoid, MonoidAction, QuasiMonoidAction};
