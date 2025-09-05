@@ -33,7 +33,7 @@ where
             None
         } else {
             Some(Self {
-                arena: Vec::new(),
+                arena: vec![Node::new()],
                 reusable_buf: Vec::with_capacity((range.len().ilog2() as usize + 1) << 2),
                 range,
             })
