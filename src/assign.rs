@@ -11,8 +11,7 @@ use crate::traits::Monoid;
 /// ```
 pub struct AssignSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
 {
     /// the length is `buf_len + n + (n & 1)`, which is even number.
     data: Box<[<Query as Monoid>::Set]>,
@@ -29,8 +28,7 @@ where
 
 impl<Query> AssignSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
 {
     const NULL_MAP_PTR: usize = !0;
 
@@ -387,8 +385,7 @@ where
 
 impl<Query> From<Vec<<Query as Monoid>::Set>> for AssignSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
 {
     fn from(values: Vec<<Query as Monoid>::Set>) -> Self {
         let n = values.len();
@@ -416,8 +413,7 @@ where
 
 impl<Query> FromIterator<<Query as Monoid>::Set> for AssignSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
 {
     fn from_iter<T: IntoIterator<Item = <Query as Monoid>::Set>>(iter: T) -> Self {
         let iter = iter.into_iter();
@@ -450,8 +446,7 @@ where
 
 impl<Query> Debug for AssignSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone + Debug,
+    Query: Monoid<Set: Clone + Debug>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("AssignSegmentTree")
@@ -466,8 +461,7 @@ where
 
 impl<Query> Clone for AssignSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
 {
     fn clone(&self) -> Self {
         Self {

@@ -305,8 +305,7 @@ where
 
 impl<Query> Debug for SegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Debug,
+    Query: Monoid<Set: Debug>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SegmentTree")
@@ -317,8 +316,7 @@ where
 
 impl<Query> Clone for SegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
 {
     fn clone(&self) -> Self {
         Self {

@@ -319,8 +319,7 @@ where
 
 impl<Update> Debug for DualSegmentTree<Update>
 where
-    Update: Monoid,
-    <Update as Monoid>::Set: Debug,
+    Update: Monoid<Set: Debug>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DualSegmentTree")
@@ -331,8 +330,7 @@ where
 
 impl<Update> Clone for DualSegmentTree<Update>
 where
-    Update: Monoid,
-    <Update as Monoid>::Set: Clone,
+    Update: Monoid<Set: Clone>,
 {
     fn clone(&self) -> Self {
         Self {
