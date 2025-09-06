@@ -2,7 +2,7 @@ use seg_lib::{DynamicLazySegmentTree, acts::MaxQueryAddOrAssignUpdate, ops::Assi
 
 /// Demonstrates how to use a [`DynamicLazySegmentTree`] for:
 /// - range maximum queries (RMQ)
-/// - range assignment and addition updates with lazy propagation
+/// - range assignment and addition updates
 fn main() {
     // Create a dynamic lazy segment tree over `-1_000..4_000`,
     // initialized with `None` (the identity element for RMQ).
@@ -12,7 +12,7 @@ fn main() {
     assert_eq!(dlst.len(), range.len());
     assert_eq!(dlst.range_query(..), None);
 
-    // reinitialize with `50`
+    // Reinitialize with `50`
     dlst.range_update(.., &AssignOr::Assign(Some(50)));
     assert_eq!(dlst.range_query(..), Some(50));
 

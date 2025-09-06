@@ -3,8 +3,6 @@
 
 # Examples
 
-## Basic Usage
-
 ```rust
 */
 #![doc = include_str!("../examples/ex_segment_tree.rs")]
