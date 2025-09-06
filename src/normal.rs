@@ -119,8 +119,7 @@ where
         [self.inner_index(l), self.inner_index(r)]
     }
 
-    /// Replaces i-th element with given `element`.
-    ///
+    #[doc = include_str!("../doc/point_update.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -146,7 +145,11 @@ where
         }
     }
 
-    /// Replaces i-th element using `f`.
+    /// Updates the `i`-th element by applying the function `f`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `i` is out of bounds.
     ///
     /// # Time complexity
     ///
@@ -181,10 +184,7 @@ where
         }
     }
 
-    /// Answers query for the given range.
-    ///
-    /// If the given range is empty, returns [the identity element](crate::traits::Monoid::identity()).
-    ///
+    #[doc = include_str!("../doc/range_query.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -235,8 +235,7 @@ where
         <Query as Monoid>::combine(&acc_l, &acc_r)
     }
 
-    /// Answers query for i-th element.
-    ///
+    #[doc = include_str!("../doc/point_query.org")]
     /// # Time complexity
     ///
     /// *O*(1)

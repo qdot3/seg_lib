@@ -24,10 +24,7 @@ impl<Query> DynamicSegmentTree<Query>
 where
     Query: Monoid,
 {
-    /// Creates a new instance initialized with [identity elements](crate::traits::Monoid::identity()).
-    ///
-    /// Returns [`None`] if the given range is empty.
-    ///
+    #[doc = include_str!("../doc/dyn_new.org")]
     /// # Time complexity
     ///
     /// *O*(1)
@@ -52,11 +49,7 @@ where
         }
     }
 
-    /// Creates a new instance initialized with [identity elements](crate::traits::Monoid::identity())
-    /// with at least specified `capacity`.
-    ///
-    /// Returns [`None`] if the given range is empty.
-    ///
+    #[doc = include_str!("../doc/dyn_with_capacity.org")]
     /// # Time complexity
     ///
     /// *O*(1)
@@ -72,16 +65,15 @@ where
     /// ```
     #[inline]
     // ANCHOR: with_capacity
-    pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
+    pub fn with_capacity(range: Range<isize>, q: usize) -> Option<Self> {
         if range.is_empty() {
             None
         } else {
+            // never panic: `range.len()` is always larger than 0
+            let height = range.len().ilog2() as usize + 1;
             Some(Self {
-                arena: Vec::with_capacity(capacity),
-                reusable_stack: Vec::with_capacity(
-                    // never panic: `range.len()` is always larger than 0
-                    range.len().ilog2() as usize + 1,
-                ),
+                arena: Vec::with_capacity(q * height),
+                reusable_stack: Vec::with_capacity(height * 4),
                 range,
             })
         }
@@ -113,8 +105,7 @@ where
         self.range.len()
     }
 
-    /// Replaces i-th element with given `element`.
-    ///
+    #[doc = include_str!("../doc/point_update.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -131,6 +122,8 @@ where
     /// assert_eq!(dst.point_query(0), 9);
     /// ```
     pub fn point_update(&mut self, mut i: isize, mut element: <Query as Monoid>::Set) {
+        assert!(self.range.contains(&i),);
+
         if self.arena.is_empty() {
             self.arena.push(Node::new(i, element));
             return;
@@ -205,10 +198,7 @@ where
         }
     }
 
-    /// Answers query for the given range.
-    ///
-    /// If the given range is empty, returns [the identity element](crate::traits::Monoid::identity()).
-    ///
+    #[doc = include_str!("../doc/range_query.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)

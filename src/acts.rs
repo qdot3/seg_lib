@@ -21,7 +21,7 @@ where
     T::from_usize(size).expect("the Set should be large enough to represent segment size.")
 }
 
-/// Represents **range add query range add update**
+/// Represents **range add query range add update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryAddUpdate<T>(PhantomData<T>);
 
@@ -48,7 +48,7 @@ where
     }
 }
 
-/// Represents **range add query range affine update**
+/// Represents **range add query range affine update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryAffineUpdate<T>(PhantomData<T>);
 
@@ -76,7 +76,7 @@ where
 }
 
 
-/// Represents **range add query range mul update**
+/// Represents **range add query range mul update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryMulUpdate<T>(PhantomData<T>);
 
@@ -99,7 +99,7 @@ where
     }
 }
 
-/// Represents **range gcd query range mul update**
+/// Represents **range gcd query range mul update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GCDQueryMulUpdate<T>(PhantomData<T>);
 
@@ -122,7 +122,7 @@ where
     }
 }
 
-/// Represents **range lcm query range mul update**
+/// Represents **range lcm query range mul update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LCMQueryMulUpdate<T>(PhantomData<T>);
 
@@ -145,7 +145,7 @@ where
     }
 }
 
-/// Represents **range max query range add update**
+/// Represents **range max query range add update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MaxQueryAddUpdate<T>(PhantomData<T>);
 
@@ -168,7 +168,7 @@ where
     }
 }
 
-/// Represents **range min query range add update**
+/// Represents **range min query range add update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MinQueryAddUpdate<T>(PhantomData<T>);
 
@@ -191,7 +191,7 @@ where
     }
 }
 
-/// Represents **range max query range assign or add update**
+/// Represents **range max query range assign or add update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MaxQueryAddOrAssignUpdate<T>(PhantomData<T>);
 
@@ -220,7 +220,7 @@ where
     }
 }
 
-/// Represents **range min query range assign or add update**
+/// Represents **range min query range assign or add update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MinQueryAddOrAssignUpdate<T>(PhantomData<T>);
 

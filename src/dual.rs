@@ -14,7 +14,7 @@ impl<Update> DualSegmentTree<Update>
 where
     Update: Monoid,
 {
-    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
+    #[doc = include_str!("../doc/new.org")]
     ///
     /// # Time complexity
     ///
@@ -126,9 +126,7 @@ where
         }
     }
 
-    /// Updates elements in the range using [predefined binary operation](crate::traits::Monoid::combine()).
-    /// More precisely, `a[i] <- update · a[i], i ∈ range`
-    ///
+    #[doc = include_str!("../doc/range_update.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -189,9 +187,7 @@ where
         } {}
     }
 
-    /// Updates `i`-th element using [predefined binary operation](crate::traits::Monoid::combine()).
-    /// More precisely, `a[i] <- update · a[i]`
-    ///
+    #[doc = include_str!("../doc/point_update.org")]
     /// # Time complexity
     ///
     /// | [commutativity](crate::traits::Monoid::IS_COMMUTATIVE) | time         |
@@ -224,8 +220,7 @@ where
         self.data[i] = <Update as Monoid>::combine(&self.data[i], update);
     }
 
-    /// Returns `i`-th element.
-    ///
+    #[doc = include_str!("../doc/point_query.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -250,7 +245,12 @@ where
         res
     }
 
-    /// Returns modified i-th element using `f`.
+    /// Returns the query result for the `i`-th element,
+    /// post-processed with the function `f`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `i` is out of bounds.
     ///
     /// # Time complexity
     ///

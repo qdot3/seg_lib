@@ -28,8 +28,7 @@ impl<Action> DynamicLazySegmentTree<Action>
 where
     Action: MonoidAction,
 {
-    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
-    ///
+    #[doc = include_str!("../doc/dyn_new.org")]
     /// # Time complexity
     ///
     /// *O*(1)
@@ -46,16 +45,12 @@ where
         }
     }
 
-    /// Creates a new instance initialized with [identity elements](crate::traits::Monoid::identity())
-    /// with at least specified `capacity`.
-    ///
-    /// Returns [`None`] if the given range is empty.
-    ///
+    #[doc = include_str!("../doc/dyn_with_capacity.org")]
     /// # Time complexity
     ///
     /// *O*(1)
     #[inline]
-    pub fn with_capacity(range: Range<isize>, capacity: usize) -> Option<Self> {
+    pub fn with_capacity(range: Range<isize>, q: usize) -> Option<Self> {
         if range.is_empty() {
             None
         } else {
@@ -63,12 +58,12 @@ where
             let height = range.len().ilog2() as usize + 1;
             Some(Self {
                 arena: {
-                    let mut arena = Vec::with_capacity(capacity * height);
+                    let mut arena = Vec::with_capacity(q * height);
                     arena.push(Node::new());
                     arena
                 },
                 range,
-                reusable_buf: Vec::with_capacity(height << 2),
+                reusable_buf: Vec::with_capacity(height * 4),
             })
         }
     }
@@ -155,9 +150,7 @@ where
         }
     }
 
-    /// Updates elements in the range using [predefined binary operation](crate::traits::Monoid::combine()).
-    /// More precisely, `a[i] <- update · a[i], i ∈ range`
-    ///
+    #[doc = include_str!("../doc/range_update.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -219,10 +212,7 @@ where
         }
     }
 
-    /// Answers query for the given range.
-    ///
-    /// If the given range is empty, returns [the identity element](crate::traits::Monoid::identity()).
-    ///
+    #[doc = include_str!("../doc/range_query.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)

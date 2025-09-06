@@ -28,7 +28,7 @@ where
 {
     const NULL_MAP_PTR: usize = !0;
 
-    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
+    #[doc = include_str!("../doc/new.org")]
     ///
     /// # Time complexity
     ///
@@ -156,7 +156,7 @@ where
         }
     }
 
-    /// Assigns the element in the range.
+    /// Assigns the `element` over the `range`.
     ///
     /// # Time complexity
     ///
@@ -249,7 +249,7 @@ where
         }
     }
 
-    /// Assign the element to i-th node.
+    /// Assign the `element` to the `i`-th node.
     ///
     /// # Time complexity
     ///
@@ -284,10 +284,7 @@ where
         }
     }
 
-    /// Answers query for the given range.
-    ///
-    /// If the given range is empty, returns [the identity element](crate::traits::Monoid::identity()).
-    ///
+    #[doc = include_str!("../doc/range_query.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -353,8 +350,7 @@ where
         <Query as Monoid>::combine(&acc_l, &acc_r)
     }
 
-    /// Answers query for i-th element.
-    ///
+    #[doc = include_str!("../doc/point_query.org")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
