@@ -11,7 +11,7 @@ use num_traits::{FromPrimitive, One, Zero};
 
 use crate::{
     Monoid, MonoidAction,
-    ops::{Add, Affine, GCD, LCM, Max, Min, Mul},
+    ops::{Add, Affine, AssignOr, GCD, LCM, Max, Min, Mul},
 };
 
 fn convert_size<T>(size: usize) -> T
@@ -21,6 +21,7 @@ where
     T::from_usize(size).expect("the Set should be large enough to represent segment size.")
 }
 
+/// Represents **range add query range add update**
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryAddUpdate<T>(PhantomData<T>);
 
@@ -47,6 +48,7 @@ where
     }
 }
 
+/// Represents **range add query range affine update**
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryAffineUpdate<T>(PhantomData<T>);
 
@@ -73,6 +75,8 @@ where
     }
 }
 
+
+/// Represents **range add query range mul update**
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryMulUpdate<T>(PhantomData<T>);
 
@@ -95,6 +99,7 @@ where
     }
 }
 
+/// Represents **range gcd query range mul update**
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct GCDQueryMulUpdate<T>(PhantomData<T>);
 
@@ -117,6 +122,7 @@ where
     }
 }
 
+/// Represents **range lcm query range mul update**
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LCMQueryMulUpdate<T>(PhantomData<T>);
 
@@ -139,6 +145,7 @@ where
     }
 }
 
+/// Represents **range max query range add update**
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MaxQueryAddUpdate<T>(PhantomData<T>);
 
@@ -161,6 +168,7 @@ where
     }
 }
 
+/// Represents **range min query range add update**
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MinQueryAddUpdate<T>(PhantomData<T>);
 
@@ -180,5 +188,63 @@ where
         _size: Option<usize>,
     ) -> <Self::Set as Monoid>::Set {
         element.as_ref().map(|element| mapping + element)
+    }
+}
+
+/// Represents **range max query range assign or add update**
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct MaxQueryAddOrAssignUpdate<T>(PhantomData<T>);
+
+impl<T> MonoidAction for MaxQueryAddOrAssignUpdate<T>
+where
+    T: Clone + Zero,
+    for<'a> &'a T: Ord + std::ops::Add<Output = T>,
+{
+    type Map = AssignOr<Add<T>>;
+    type Set = Max<T>;
+
+    const USE_SEGMENT_SIZE: bool = false;
+
+    fn act(
+        mapping: &<Self::Map as Monoid>::Set,
+        element: &<Self::Set as Monoid>::Set,
+        _size: Option<usize>,
+    ) -> <Self::Set as Monoid>::Set {
+        match mapping {
+            AssignOr::Assign(assign) => match assign {
+                Some(new_element) => Some(new_element.clone()),
+                None => element.clone(),
+            },
+            AssignOr::Other(add) => element.as_ref().map(|element| element + add),
+        }
+    }
+}
+
+/// Represents **range min query range assign or add update**
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct MinQueryAddOrAssignUpdate<T>(PhantomData<T>);
+
+impl<T> MonoidAction for MinQueryAddOrAssignUpdate<T>
+where
+    T: Clone + Zero,
+    for<'a> &'a T: Ord + std::ops::Add<Output = T>,
+{
+    type Map = AssignOr<Add<T>>;
+    type Set = Min<T>;
+
+    const USE_SEGMENT_SIZE: bool = false;
+
+    fn act(
+        mapping: &<Self::Map as Monoid>::Set,
+        element: &<Self::Set as Monoid>::Set,
+        _size: Option<usize>,
+    ) -> <Self::Set as Monoid>::Set {
+        match mapping {
+            AssignOr::Assign(assign) => match assign {
+                Some(new_element) => Some(new_element.clone()),
+                None => element.clone(),
+            },
+            AssignOr::Other(add) => element.as_ref().map(|element| element + add),
+        }
     }
 }

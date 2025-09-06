@@ -7,6 +7,12 @@ use std::{
 use crate::traits::{Monoid, MonoidAction};
 
 /// A data structure that supports **range query range update** operations on large array.
+///
+/// # Example
+///
+/// ```rust
+#[doc = include_str!("../examples/ex_dynamic_lazy.rs")]
+/// ```
 pub struct DynamicLazySegmentTree<Action>
 where
     Action: MonoidAction,

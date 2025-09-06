@@ -12,6 +12,7 @@
 /// where `·` is the binary operation and `e` is the identity element.
 // ANCHOR: monoid_trait
 pub trait Monoid {
+    /// The set of the monoid.
     type Set;
 
     /// If [`Self::combine`] is commutative, some operations can be optimized.
@@ -74,7 +75,9 @@ monoid_tuple_impl!((M0, 0), (M1, 1), (M2, 2), (M3, 3),);
 /// See [Monoid] for reference.
 // ANCHOR: monoid_action_trait
 pub trait MonoidAction {
+    /// The set of the monoid for update operation.
     type Map: Monoid;
+    /// The set of the monoid for query operation.
     type Set: Monoid;
 
     /// Set [`true`] to use the segment size in [`Self::act()`]
@@ -99,7 +102,9 @@ pub trait MonoidAction {
 ///
 /// See [`MonoidAction`] for details.
 pub trait QuasiMonoidAction {
+    /// The set of the monoid for update operation.
     type Map: Monoid;
+    /// The set of the monoid for query operation.
     type Set: Monoid;
 
     /// Set [`true`] to use the segment size in [`Self::try_act()`]

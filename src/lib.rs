@@ -1,24 +1,14 @@
 /*!
 `seg_lib` provides segment tree variants.
 
-# Example
+# Examples
+
+## Basic Usage
 
 ```rust
-use seg_lib::{SegmentTree, ops::Add};
-
-// point update range sum query
-let mut seg_tree = SegmentTree::<Add<i32>>::from_iter(0..1_000);
-
-assert_eq!(seg_tree.range_query(..), 999 * 1_000 / 2);
-
-// replace 0-th element with 100
-seg_tree.point_update(0, 100);
-assert_eq!(seg_tree.point_query(0), &100);
-
-// twice 10-th element
-seg_tree.point_update_with(10, |v| v * 2);
-assert_eq!(seg_tree.point_query(10), &20);
-assert_eq!(seg_tree.range_query(..), 999 * 1_000 / 2 + 110)
+*/
+#![doc = include_str!("../examples/ex_segment_tree.rs")]
+/*!
 ```
 
 See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
@@ -34,6 +24,8 @@ See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
 | [`DynamicLazySegmentTree`] | ✅           | ✅            | large array                         |
 | [`AssignSegmentTree`]      | ✅           | ✅            | specialized for range assign update |
 */
+
+#![warn(missing_docs)]
 
 mod normal;
 pub use normal::SegmentTree;

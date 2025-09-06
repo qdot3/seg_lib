@@ -2,12 +2,15 @@ use std::fmt::Debug;
 
 use crate::{Monoid, ops::Assign};
 
+/// Extends any [`Monoid`] with `=` operation.
 pub enum AssignOr<M>
 where
     M: Monoid,
     <M as Monoid>::Set: Clone,
 {
+    /// `=` operation
     Assign(<Assign<<M as Monoid>::Set> as Monoid>::Set),
+    /// the associative binary operation of `M`, which is a [`Monoid`].
     Other(<M as Monoid>::Set),
 }
 

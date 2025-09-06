@@ -1,0 +1,4 @@
+Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
+
+Use `from` or `from_iter` if initial values are known.
+
