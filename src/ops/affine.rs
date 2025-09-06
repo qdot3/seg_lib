@@ -23,8 +23,8 @@ where
 
     fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set {
         [
-            &lhs_or_prev[0] * &rhs_or_new[0],
-            &(&lhs_or_prev[0] * &rhs_or_new[1]) + &lhs_or_prev[1],
+            &rhs_or_new[0] * &lhs_or_prev[0],
+            &(&rhs_or_new[0] * &lhs_or_prev[1]) + &rhs_or_new[1],
         ]
     }
 }
