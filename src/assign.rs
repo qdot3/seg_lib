@@ -3,6 +3,12 @@ use std::{fmt::Debug, ops::RangeBounds};
 use crate::traits::Monoid;
 
 /// A data structure that supports **range query range assign** operations.
+///
+/// # Example
+///
+/// ```
+#[doc = include_str!("../examples/ex_assign.rs")]
+/// ```
 pub struct AssignSegmentTree<Query>
 where
     Query: Monoid,

@@ -7,6 +7,12 @@ use std::{
 use crate::traits::Monoid;
 
 /// A data structure that supports **range query point update** operations on large array.
+///
+/// # Example
+///
+/// ```
+#[doc = include_str!("../examples/ex_dynamic.rs")]
+/// ```
 // ANCHOR: definition
 pub struct DynamicSegmentTree<Query>
 where
@@ -371,8 +377,7 @@ where
 
 impl<Query> DynamicSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
 {
     /// Answers query for i-th element.
     ///
@@ -428,8 +433,7 @@ where
 
 impl<Query> Debug for DynamicSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Debug,
+    Query: Monoid<Set: Debug>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DynamicSegmentTree")
@@ -442,8 +446,7 @@ where
 
 impl<Query> Clone for DynamicSegmentTree<Query>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
 {
     fn clone(&self) -> Self {
         Self {
