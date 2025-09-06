@@ -9,7 +9,7 @@ fn main() {
     assert_eq!(segment_tree.len(), 7);
     assert!(segment_tree.iter().all(|e| *e == 0));
 
-    // Replace the 0th element with 100
+    // Replace the 0th element with `100`
     segment_tree.point_update(0, 100);
     assert_eq!(
         Vec::from_iter(segment_tree.iter().copied()),

@@ -26,6 +26,10 @@ name = "ex_segment_tree"
 doc-scrape-examples = true
 
 [[example]]
+name = "ex_dual"
+doc-scrape-examples = true
+
+[[example]]
 name = "ex_dynamic_lazy"
 doc-scrape-examples = true
 

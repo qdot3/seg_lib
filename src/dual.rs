@@ -3,6 +3,12 @@ use std::{fmt::Debug, ops::RangeBounds};
 use crate::traits::Monoid;
 
 /// A data structure that supports **point query range update** operations.
+///
+/// # Example
+///
+/// ```rust
+#[doc = include_str!("../examples/ex_dual.rs")]
+/// ```
 pub struct DualSegmentTree<Update>
 where
     Update: Monoid,
