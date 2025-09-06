@@ -283,9 +283,7 @@ where
 
 impl<Action> Debug for DynamicLazySegmentTree<Action>
 where
-    <<Action as MonoidAction>::Set as Monoid>::Set: Debug,
-    <<Action as MonoidAction>::Map as Monoid>::Set: Debug,
-    Action: MonoidAction,
+    Action: MonoidAction<Set: Monoid<Set: Debug>, Map: Monoid<Set: Debug>>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DynamicLazySegmentTree")
@@ -298,9 +296,7 @@ where
 
 impl<Action> Clone for DynamicLazySegmentTree<Action>
 where
-    <<Action as MonoidAction>::Set as Monoid>::Set: Clone,
-    <<Action as MonoidAction>::Map as Monoid>::Set: Clone,
-    Action: MonoidAction,
+    Action: MonoidAction<Set: Monoid<Set: Clone>, Map: Monoid<Set: Clone>>,
 {
     fn clone(&self) -> Self {
         Self {
@@ -364,10 +360,8 @@ where
 
 impl<Query, Update> Debug for Node<Query, Update>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Debug,
-    Update: Monoid,
-    <Update as Monoid>::Set: Debug,
+    Query: Monoid<Set: Debug>,
+    Update: Monoid<Set: Debug>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Node")
@@ -381,10 +375,8 @@ where
 
 impl<Query, Update> Clone for Node<Query, Update>
 where
-    Query: Monoid,
-    <Query as Monoid>::Set: Clone,
-    Update: Monoid,
-    <Update as Monoid>::Set: Clone,
+    Query: Monoid<Set: Clone>,
+    Update: Monoid<Set: Clone>,
 {
     fn clone(&self) -> Self {
         Self {

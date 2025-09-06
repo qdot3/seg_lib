@@ -484,9 +484,7 @@ where
 
 impl<Action> Debug for LazySegmentTree<Action>
 where
-    <<Action as MonoidAction>::Set as Monoid>::Set: Debug,
-    <<Action as MonoidAction>::Map as Monoid>::Set: Debug,
-    Action: MonoidAction,
+    Action: MonoidAction<Set: Monoid<Set: Debug>, Map: Monoid<Set: Debug>>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("LazySegmentTree")
@@ -499,9 +497,7 @@ where
 
 impl<Action> Clone for LazySegmentTree<Action>
 where
-    <<Action as MonoidAction>::Set as Monoid>::Set: Clone,
-    <<Action as MonoidAction>::Map as Monoid>::Set: Clone,
-    Action: MonoidAction,
+    Action: MonoidAction<Set: Monoid<Set: Clone>, Map: Monoid<Set: Clone>>,
 {
     fn clone(&self) -> Self {
         Self {
