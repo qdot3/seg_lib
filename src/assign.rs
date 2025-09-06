@@ -29,7 +29,6 @@ where
     const NULL_MAP_PTR: usize = !0;
 
     #[doc = include_str!("../doc/new.org")]
-    ///
     /// # Time complexity
     ///
     /// *O*(*N*)

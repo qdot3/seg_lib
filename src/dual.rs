@@ -21,7 +21,6 @@ where
     Update: Monoid,
 {
     #[doc = include_str!("../doc/new.org")]
-    ///
     /// # Time complexity
     ///
     /// *O*(*N*)
