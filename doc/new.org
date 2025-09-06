@@ -1,4 +1,4 @@
 Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
 
-Use `from` or `from_iter` if initial values are known.
-
+If you want to initialize with specific values,
+use [`from`](Self::from) or [`from_iter`](Self::from_iter) instead.

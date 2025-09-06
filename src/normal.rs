@@ -27,8 +27,7 @@ impl<Query> SegmentTree<Query>
 where
     Query: Monoid,
 {
-    /// Creates a new instance initialized with `n` [identity elements](crate::traits::Monoid::identity()).
-    ///
+    #[doc = include_str!("../doc/new.org")]
     /// # Example
     ///
     /// ```
