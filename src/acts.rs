@@ -75,7 +75,6 @@ where
     }
 }
 
-
 /// Represents **range add query range mul update**.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AddQueryMulUpdate<T>(PhantomData<T>);

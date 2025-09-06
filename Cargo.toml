@@ -11,6 +11,8 @@ license = "MIT OR Apache-2.0"
 keywords = ["segment_tree"]
 categories = ["data-structures"]
 
+exclude = [".*", "/book",]
+
 [dependencies]
 num-integer = "0.1.46"
 num-traits = "0.2.19"

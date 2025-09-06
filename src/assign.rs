@@ -251,6 +251,8 @@ where
 
     /// Assign the `element` to the `i`-th node.
     ///
+    /// Does nothing if the `range` is empty.
+    ///
     /// # Time complexity
     ///
     /// *O*(log *N*)

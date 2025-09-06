@@ -371,7 +371,7 @@ where
     /// let mut lst = LazySegmentTree::<MaxQueryAddUpdate<i32>>::from_iter(
     ///     (0..100).map(|v| Some(v))
     /// );
-    /// 
+    ///
     /// for i in 0..100 {
     ///     assert_eq!(lst.point_query(i), &Some(i as i32))
     /// }
