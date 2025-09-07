@@ -33,5 +33,17 @@ doc-scrape-examples = true
 name = "ex_dynamic_lazy"
 doc-scrape-examples = true
 
+[[example]]
+name = "ex_assign"
+doc-scrape-examples = true
+
+[[example]]
+name = "ex_dynamic"
+doc-scrape-examples = true
+
+[[example]]
+name = "ex_lazy"
+doc-scrape-examples = true
+
 [package.metadata.docs.rs]
 cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
