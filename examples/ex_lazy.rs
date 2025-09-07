@@ -9,17 +9,15 @@ fn main() {
     assert_eq!(seg.len(), 100);
     assert_eq!(Vec::from_iter(seg.iter().copied()), Vec::from_iter(0..100));
 
-    // Apply a range update: x -> 2x
-    seg.range_update(.., &2);
-    assert_eq!(
-        Vec::from_iter(seg.iter().copied()),
-        (0..100).map(|i| i * 2).collect::<Vec<_>>()
-    );
+    // Apply range multiplication updates
+    seg.range_update(.., &2); // x -> 2x
+    seg.range_update(50..=75, &3); // x -> 3x
 
-    // Query the sum over the first 50 elements
+    // Query sums over ranges
     assert_eq!(seg.range_query(..50), (0..50).map(|i| 2 * i).sum());
+    assert_eq!(seg.range_query(50..=75), (50..=75).map(|i| 6 * i).sum());
 
     // Update and query a single element
     seg.point_update(50, &100);
-    assert_eq!(seg.point_query(50), &10_000);
+    assert_eq!(seg.point_query(50), &30_000);
 }
