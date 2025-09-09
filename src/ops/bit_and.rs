@@ -4,7 +4,7 @@ use num_traits::Zero;
 
 use crate::traits::Monoid;
 
-/// Represents `&` operation.
+/// Performs `&` operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitAnd<T>(PhantomData<T>);
 

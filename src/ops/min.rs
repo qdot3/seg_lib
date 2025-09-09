@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use crate::traits::Monoid;
 
-/// Represents `chmin` operation.
+/// Performs `chmin` operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Min<T>(PhantomData<T>);
 

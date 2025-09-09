@@ -4,7 +4,7 @@ use num_integer::Integer;
 
 use crate::traits::Monoid;
 
-/// Represents `gcd` operation.
+/// Performs `gcd` operation.
 ///
 /// # Notes
 ///

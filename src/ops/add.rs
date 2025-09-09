@@ -4,7 +4,7 @@ use num_traits::Zero;
 
 use crate::traits::Monoid;
 
-/// Represents `+` operation.
+/// Performs `+` operation.
 // ANCHOR: def_and_impl_monoid
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Add<T>(PhantomData<T>);
