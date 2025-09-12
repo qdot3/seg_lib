@@ -13,18 +13,18 @@ where
     T: One + Zero,
     for<'a> &'a T: std::ops::Add<Output = T> + std::ops::Mul<Output = T>,
 {
-    type Set = [T; 2];
+    type Set = (T, T);
 
     const IS_COMMUTATIVE: bool = false;
 
     fn identity() -> Self::Set {
-        [T::one(), T::zero()]
+        (T::one(), T::zero())
     }
 
     fn combine(lhs_or_prev: &Self::Set, rhs_or_new: &Self::Set) -> Self::Set {
-        [
-            &rhs_or_new[0] * &lhs_or_prev[0],
-            &(&rhs_or_new[0] * &lhs_or_prev[1]) + &rhs_or_new[1],
-        ]
+        (
+            &rhs_or_new.0 * &lhs_or_prev.0,
+            &(&rhs_or_new.0 * &lhs_or_prev.1) + &rhs_or_new.1,
+        )
     }
 }

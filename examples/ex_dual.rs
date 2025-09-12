@@ -10,16 +10,16 @@ fn main() {
     assert!(seg.iter().all(|e| *e == Affine::<i32>::identity()));
 
     // Compose affine transformations
-    seg.range_update(..75, &[2, 3]); // ax + b -> 2(ax + b) + 3
-    seg.range_update(25.., &[5, 7]); // ax + b -> 5(ax + b) + 7
+    seg.range_update(..75, &(2, 3)); // ax + b -> 2(ax + b) + 3
+    seg.range_update(25.., &(5, 7)); // ax + b -> 5(ax + b) + 7
 
     // Query a single element
-    assert_eq!(seg.point_query(50), [10, 22]);
+    assert_eq!(seg.point_query(50), (10, 22));
 
     // Query with a custom function
-    assert_eq!(seg.point_query_with(75, |[a, b]| a * 100 + b), 507);
+    assert_eq!(seg.point_query_with(75, |(a, b)| a * 100 + b), 507);
 
     // Update and query a single element
-    seg.point_update(50, &[0, 100]); // ax + b -> 0(ax + b) + 100
-    assert_eq!(seg.point_query(50), [0, 100]);
+    seg.point_update(50, &(0, 100)); // ax + b -> 0(ax + b) + 100
+    assert_eq!(seg.point_query(50), (0, 100));
 }

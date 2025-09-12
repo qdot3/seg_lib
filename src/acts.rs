@@ -71,7 +71,7 @@ where
         size: Option<usize>,
     ) -> <Self::Set as Monoid>::Set {
         let size: T = convert_size(size.unwrap());
-        &mapping[0] * element + &size * &mapping[1]
+        &mapping.0 * element + &size * &mapping.1
     }
 }
 
