@@ -27,7 +27,7 @@ impl<Query> SegmentTree<Query>
 where
     Query: Monoid,
 {
-    #[doc = include_str!("../doc/new.org")]
+    #[doc = include_str!("../doc/new.md")]
     /// # Example
     ///
     /// ```
@@ -41,10 +41,7 @@ where
     /// *O*(*N*)
     #[inline]
     pub fn new(n: usize) -> Self {
-        let data = Vec::from_iter(std::iter::repeat_with(<Query as Monoid>::identity).take(n << 1))
-            .into_boxed_slice();
-
-        Self { data }
+        Self::from_iter(std::iter::repeat_with(<Query as Monoid>::identity).take(n))
     }
 
     /// Returns the number of elements.
@@ -119,7 +116,7 @@ where
         [self.inner_index(l), self.inner_index(r)]
     }
 
-    #[doc = include_str!("../doc/point_update.org")]
+    #[doc = include_str!("../doc/point_update.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -184,7 +181,7 @@ where
         }
     }
 
-    #[doc = include_str!("../doc/range_query.org")]
+    #[doc = include_str!("../doc/range_query.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -235,7 +232,7 @@ where
         <Query as Monoid>::combine(&acc_l, &acc_r)
     }
 
-    #[doc = include_str!("../doc/point_query.org")]
+    #[doc = include_str!("../doc/point_query.md")]
     /// # Time complexity
     ///
     /// *O*(1)

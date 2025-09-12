@@ -1,3 +1,0 @@
-Answers a query over the `range`.
-
-Returns [the identity element](crate::traits::Monoid::identity()) if the `range` is empty.

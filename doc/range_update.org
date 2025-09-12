@@ -1,3 +1,0 @@
-Updates elements over the `range` using the specified [binary operation](crate::traits::Monoid::combine()).
-
-Does nothing if the `range` is empty.

@@ -20,7 +20,7 @@ impl<Update> DualSegmentTree<Update>
 where
     Update: Monoid,
 {
-    #[doc = include_str!("../doc/new.org")]
+    #[doc = include_str!("../doc/new.md")]
     /// # Time complexity
     ///
     /// *O*(*N*)
@@ -131,7 +131,7 @@ where
         }
     }
 
-    #[doc = include_str!("../doc/range_update.org")]
+    #[doc = include_str!("../doc/range_update.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -192,7 +192,7 @@ where
         } {}
     }
 
-    #[doc = include_str!("../doc/point_update.org")]
+    #[doc = include_str!("../doc/point_update.md")]
     /// # Time complexity
     ///
     /// | [commutativity](crate::traits::Monoid::IS_COMMUTATIVE) | time         |
@@ -225,7 +225,7 @@ where
         self.data[i] = <Update as Monoid>::combine(&self.data[i], update);
     }
 
-    #[doc = include_str!("../doc/point_query.org")]
+    #[doc = include_str!("../doc/point_query.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)

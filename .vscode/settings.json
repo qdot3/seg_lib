@@ -5,6 +5,7 @@
         "dlst",
         "maspy",
         "mathbb",
+        "thiserror",
         "Zrustdoc",
         "Zunstable"
     ]

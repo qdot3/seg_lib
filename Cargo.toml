@@ -16,6 +16,7 @@ exclude = [".*", "/book",]
 [dependencies]
 num-integer = "0.1.46"
 num-traits = "0.2.19"
+thiserror = "2.0.16"
 
 [dev-dependencies]
 proconio = { version = "0.5.0", features = ["derive"] }

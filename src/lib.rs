@@ -21,6 +21,8 @@ See more [examples](https://github.com/qdot3/seg_lib/tree/master/examples).
 | [`LazySegmentTree`]        | ✅           | ✅            |                                     |
 | [`DynamicLazySegmentTree`] | ✅           | ✅            | large array                         |
 | [`AssignSegmentTree`]      | ✅           | ✅            | specialized for range assign update |
+
+Dynamic dual segment tree will no be implemented because it is useless.
 */
 
 #![warn(missing_docs)]
@@ -52,3 +54,5 @@ pub mod ops;
 
 mod traits;
 pub use traits::{Monoid, MonoidAction, QuasiMonoidAction};
+
+pub(crate) mod utility;

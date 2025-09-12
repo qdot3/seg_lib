@@ -28,7 +28,7 @@ impl<Action> DynamicLazySegmentTree<Action>
 where
     Action: MonoidAction,
 {
-    #[doc = include_str!("../doc/dyn_new.org")]
+    #[doc = include_str!("../doc/dyn_new.md")]
     /// # Time complexity
     ///
     /// *O*(1)
@@ -45,7 +45,7 @@ where
         }
     }
 
-    #[doc = include_str!("../doc/dyn_with_capacity.org")]
+    #[doc = include_str!("../doc/dyn_with_capacity.md")]
     /// # Time complexity
     ///
     /// *O*(1)
@@ -150,7 +150,7 @@ where
         }
     }
 
-    #[doc = include_str!("../doc/range_update.org")]
+    #[doc = include_str!("../doc/range_update.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -212,7 +212,7 @@ where
         }
     }
 
-    #[doc = include_str!("../doc/range_query.org")]
+    #[doc = include_str!("../doc/range_query.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)

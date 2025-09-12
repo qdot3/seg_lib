@@ -26,7 +26,7 @@ impl<Action> LazySegmentTree<Action>
 where
     Action: MonoidAction,
 {
-    #[doc = include_str!("../doc/new.org")]
+    #[doc = include_str!("../doc/new.md")]
     ///
     /// # Time complexity
     ///
@@ -164,7 +164,7 @@ where
         }
     }
 
-    #[doc = include_str!("../doc/range_update.org")]
+    #[doc = include_str!("../doc/range_update.md")]
     ///
     /// # Time complexity
     ///
@@ -251,7 +251,7 @@ where
         }
     }
 
-    #[doc = include_str!("../doc/point_update.org")]
+    #[doc = include_str!("../doc/point_update.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -293,7 +293,7 @@ where
         }
     }
 
-    #[doc = include_str!("../doc/range_query.org")]
+    #[doc = include_str!("../doc/range_query.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
@@ -364,7 +364,7 @@ where
         <<Action as MonoidAction>::Set as Monoid>::combine(&acc_l, &acc_r)
     }
 
-    #[doc = include_str!("../doc/point_query.org")]
+    #[doc = include_str!("../doc/point_query.md")]
     /// # Time complexity
     ///
     /// *O*(log *N*)
