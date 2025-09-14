@@ -1,6 +1,7 @@
 # Summary
 
 - [セグメント木]()
+  - [二分探索](./segment_tree/binary_serach.md)
 
 - [代数的構造](./algebra/introduction.md)
   - [モノイド](./algebra/monoid.md)

@@ -20,6 +20,11 @@ where
     /// - data\[1..n\] : nodes to store the combined value of the children.
     /// - data\[n..2n\]: nodes to store value for each cell.
     data: Box<[<Query as Monoid>::Set]>,
+
+    /// `len` (number of elements) and offset (dummy + cache)
+    len_or_offset: usize,
+    // /// This and its ancestors are all invalid (cached result may be broken)
+    // min_invalid_node: usize,
 }
 // ANCHOR_END: definition
 
@@ -62,8 +67,8 @@ where
     /// ```
     #[allow(clippy::len_without_is_empty)]
     #[inline]
-    pub fn len(&self) -> usize {
-        self.data.len() >> 1
+    pub const fn len(&self) -> usize {
+        self.len_or_offset
     }
 
     /// Returns an iterator over the elements
@@ -88,12 +93,12 @@ where
     #[inline]
     #[must_use = "iterators are lazy and do nothing unless consumed"]
     pub fn iter(&self) -> std::slice::Iter<'_, <Query as Monoid>::Set> {
-        self.data[self.data.len() >> 1..].iter()
+        self.data[self.len_or_offset..].iter()
     }
 
     #[inline]
-    fn inner_index(&self, i: usize) -> usize {
-        self.data.len() / 2 + i
+    const fn inner_index(&self, i: usize) -> usize {
+        self.len_or_offset + i
     }
 
     /// Returns `[l, r)` on `self.data`.
@@ -110,14 +115,15 @@ where
         let r = match range.end_bound() {
             std::ops::Bound::Included(r) => r + 1,
             std::ops::Bound::Excluded(r) => *r,
-            std::ops::Bound::Unbounded => self.data.len() / 2,
+            std::ops::Bound::Unbounded => self.len_or_offset,
         };
 
         [self.inner_index(l), self.inner_index(r)]
     }
 
     #[doc = include_str!("../doc/point_update.md")]
-    /// # Time complexity
+    ///
+    ///  # Time complexity
     ///
     /// *O*(log *N*)
     ///
@@ -248,9 +254,98 @@ where
     /// st.point_update(10, 6);
     /// assert_eq!(st.point_query(10), &6);
     /// ```
-    pub fn point_query(&self, i: usize) -> &<Query as Monoid>::Set {
+    pub const fn point_query(&self, i: usize) -> &<Query as Monoid>::Set {
         let i = self.inner_index(i);
         &self.data[i]
+    }
+
+    /// Returns the largest index `end` such that:
+    ///
+    /// ```text
+    /// pred(self.range_query(start..i)) == true   for ∀ i ∈ [start, end]
+    /// pred(self.range_query(start..i)) == false  for ∀ i ∈ [end + 1, N]
+    /// ```
+    ///
+    /// This is analogous to [`slice::partition_point`], but applied to
+    /// range queries on a segment tree.
+    ///
+    /// # Constraints
+    ///
+    /// - `pred` must return `true` for the identity element.
+    /// - Once `pred` returns `false` for some `i`, it must return `false`
+    ///   for all larger `i`, that is the results must be partitioned.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let st = seg_lib::SegmentTree::<seg_lib::ops::Add<i32>>::from(
+    ///     vec![1, 1, 1, 0, 0, 0, 0, 1, 1, 1]
+    /// );
+    ///
+    /// let start = 1;
+    /// let sum = 2;
+    /// let end = st.partition_end(start, |v| *v <= sum);
+    /// assert_eq!(end, 7);
+    /// assert!((start..end).all(|end| st.range_query(start..end) <= sum));
+    /// assert!((end + 1..10).all(|end| st.range_query(start..end) > sum));
+    /// ```
+    pub fn partition_end<P>(&self, mut start: usize, pred: P) -> usize
+    where
+        P: Fn(&<Query as Monoid>::Set) -> bool,
+    {
+        assert!(start < self.len_or_offset);
+
+        let mut i = self.inner_index(start);
+        let mut segment_size = 1 << i.trailing_zeros();
+        i >>= i.trailing_zeros();
+        let mut combined = <Query as Monoid>::identity();
+
+        while start + segment_size < self.len_or_offset {
+            let tmp = <Query as Monoid>::combine(&combined, &self.data[i]);
+
+            if pred(&tmp) {
+                combined = tmp;
+
+                start += segment_size;
+
+                i += 1;
+                segment_size <<= i.trailing_zeros();
+                i >>= i.trailing_zeros();
+            } else {
+                break;
+            }
+        }
+
+        if start == self.len_or_offset {
+            return self.len_or_offset;
+        }
+
+        (i, segment_size) = {
+            i = self.inner_index(start);
+            let shift = (self.len_or_offset - start).ilog2().min(i.trailing_zeros());
+            (i >> shift, 1 << shift)
+        };
+        while {
+            let tmp = <Query as Monoid>::combine(&combined, &self.data[i]);
+
+            if pred(&tmp) {
+                combined = tmp;
+
+                i += 1;
+                start += segment_size;
+            }
+
+            i <<= 1;
+            segment_size >>= 1;
+
+            i < self.len_or_offset * 2
+        } {}
+
+        start.min(self.len_or_offset)
     }
 }
 
@@ -259,9 +354,10 @@ where
     Query: Monoid,
 {
     fn from(values: Vec<<Query as Monoid>::Set>) -> Self {
+        let n = values.len();
         let mut data = Vec::from_iter(
             std::iter::repeat_with(<Query as Monoid>::identity)
-                .take(values.len())
+                .take(n)
                 .chain(values),
         )
         .into_boxed_slice();
@@ -270,7 +366,10 @@ where
             data[i] = <Query as Monoid>::combine(&data[i * 2], &data[i * 2 + 1])
         }
 
-        Self { data }
+        Self {
+            data,
+            len_or_offset: n,
+        }
     }
 }
 
@@ -293,7 +392,10 @@ where
                 data[i] = <Query as Monoid>::combine(&data[i * 2], &data[i * 2 + 1])
             }
 
-            Self { data }
+            Self {
+                data,
+                len_or_offset: min,
+            }
         } else {
             Self::from(Vec::from_iter(iter))
         }
@@ -307,6 +409,7 @@ where
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SegmentTree")
             .field("data", &self.data)
+            .field("len_or_offset", &self.len_or_offset)
             .finish()
     }
 }
@@ -318,24 +421,22 @@ where
     fn clone(&self) -> Self {
         Self {
             data: self.data.clone(),
+            len_or_offset: self.len_or_offset,
         }
     }
 }
 
 #[cfg(test)]
-mod test_range_query {
+mod range_query {
     use rand::Rng;
 
     use crate::{SegmentTree, ops::Add};
 
     fn template(n: usize) {
-        let point_add_range_sum = SegmentTree::<Add<usize>>::from_iter(0..n);
+        let range_sum = SegmentTree::<Add<usize>>::from_iter(0..n);
         for i in 0..n {
             for j in i + 1..n {
-                assert_eq!(
-                    point_add_range_sum.range_query(i..j),
-                    (i + j - 1) * (j - i) / 2
-                )
+                assert_eq!(range_sum.range_query(i..j), (i + j - 1) * (j - i) / 2)
             }
         }
     }
@@ -353,5 +454,71 @@ mod test_range_query {
         for _ in 0..5 {
             template(rng.random_range(100..5_000));
         }
+    }
+}
+
+#[cfg(test)]
+mod partition_point {
+    use std::ops::Range;
+
+    use rand::Rng;
+
+    use crate::{SegmentTree, ops::Add};
+
+    /// *O*(*N*)
+    fn naive_partition_end<P>(src: &[u32], start: usize, pred: P) -> usize
+    where
+        P: Fn(u32) -> bool,
+    {
+        let mut acc = 0;
+        start
+            + src[start..]
+                .iter()
+                .take_while(|&&v| {
+                    acc += v;
+                    pred(acc)
+                })
+                .count()
+    }
+
+    #[test]
+    fn partition_end_ones() {
+        const MAX_SIZE: isize = 200;
+        const OFFSET: isize = 10;
+
+        for size in 0..MAX_SIZE {
+            let range_sum_query =
+                SegmentTree::<Add<isize>>::from_iter(std::iter::repeat_n(1, size as usize));
+            for start in 0..size {
+                for sum in -OFFSET..=size as isize + OFFSET {
+                    assert_eq!(
+                        range_sum_query.partition_end(start as usize, |&v| v <= sum),
+                        (start + sum).clamp(start, size) as usize,
+                        "size: {size}, start: {start}, sum: {sum}"
+                    )
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn partition_end() {
+        const SIZE: usize = 1_000;
+        const RANGE: Range<u32> = 0..u32::MAX / SIZE as u32; // avoid overflow for range sum query
+
+        let mut rng = rand::rng();
+
+        let src = Vec::from_iter(std::iter::repeat_with(|| rng.random_range(RANGE)).take(SIZE));
+        let range_sum_query = SegmentTree::<Add<_>>::from(src.clone());
+
+        // for _ in 0..ITER_COUNT {
+        let start = rng.random_range(0..SIZE);
+        let sum = rng.random();
+        println!("{start} {sum}");
+        assert_eq!(
+            range_sum_query.partition_end(start, |v| *v < sum),
+            naive_partition_end(&src, start, |v| v < sum)
+        );
+        // }
     }
 }

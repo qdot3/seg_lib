@@ -26,6 +26,8 @@ Dynamic dual segment tree will no be implemented because it is useless.
 */
 
 #![warn(missing_docs)]
+#![allow(clippy::needless_doctest_main)]
+
 
 mod normal;
 pub use normal::SegmentTree;
