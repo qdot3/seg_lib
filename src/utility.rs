@@ -7,7 +7,7 @@ use std::{
 ///
 /// # Panics
 ///
-/// Panics if the given range is out of bounds or if any of inclusive bounds is `usize::MAX`.
+/// Panics if the given range is out of bounds or ...
 #[inline(always)]
 pub(crate) fn convert_range<R>(given: R, outer: Range<usize>) -> Range<usize>
 where
@@ -58,7 +58,8 @@ mod test_convert_range {
 
     #[test]
     fn overflow() {
-        convert_range(..=!0, 0..!0);
+        assert!(catch_unwind(|| convert_range(..=!0, 0..!0)).is_err());
+        assert!(catch_unwind(|| convert_range(.., 0..!0)).is_ok());
     }
 }
 

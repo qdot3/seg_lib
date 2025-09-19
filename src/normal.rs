@@ -1,6 +1,9 @@
-use std::{fmt::Debug, ops::RangeBounds};
+use std::{
+    fmt::Debug,
+    ops::{Range, RangeBounds},
+};
 
-use crate::traits::Monoid;
+use crate::{traits::Monoid, utility::convert_range};
 
 /// A data structure that supports **range query point update** operations.
 ///
@@ -101,26 +104,6 @@ where
         self.len_or_offset + i
     }
 
-    /// Returns `[l, r)` on `self.data`.
-    #[inline]
-    fn inner_range<R>(&self, range: R) -> [usize; 2]
-    where
-        R: RangeBounds<usize>,
-    {
-        let l = match range.start_bound() {
-            std::ops::Bound::Included(l) => *l,
-            std::ops::Bound::Excluded(l) => l + 1,
-            std::ops::Bound::Unbounded => 0,
-        };
-        let r = match range.end_bound() {
-            std::ops::Bound::Included(r) => r + 1,
-            std::ops::Bound::Excluded(r) => *r,
-            std::ops::Bound::Unbounded => self.len_or_offset,
-        };
-
-        [self.inner_index(l), self.inner_index(r)]
-    }
-
     #[doc = include_str!("../doc/point_update.md")]
     ///
     /// # Time complexity
@@ -208,17 +191,15 @@ where
     /// ```
     pub fn range_query<R>(&self, range: R) -> <Query as Monoid>::Set
     where
-        R: RangeBounds<usize>,
+        R: RangeBounds<usize> + Debug,
     {
-        let [l, r] = self.inner_range(range);
-        if l >= r {
+        let range = convert_range(range, 0..self.len_or_offset);
+        if range.is_empty() {
             return <Query as Monoid>::identity();
         }
-        // l + 1 == r because l < r except when overflow occurs
-        if l + 1 == r {
-            return <Query as Monoid>::combine(&<Query as Monoid>::identity(), &self.data[l]);
-        }
 
+        let Range { start, end } = range;
+        let [l, r] = [self.inner_index(start), self.inner_index(end)];
         let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
         let (mut acc_l, mut acc_r) = (<Query as Monoid>::identity(), <Query as Monoid>::identity());
         while {
