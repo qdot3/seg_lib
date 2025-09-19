@@ -3,9 +3,10 @@
 - [セグメント木]()
   - [二分探索](./segment_tree/binary_serach.md)
 
-- [実装上の注意](./implementation/summary.md)
-  - [区間の取り扱い](./implementation/range.md)
-  - [サイズ](./implementation/size.md)
+- [実装上の注意](./tips/summary.md)
+  - [区間の抽象化](./tips/range.md)
+  - [サイズ](./tips/size.md)
+  - [遅延伝搬](./tips/lazy_propagation.md)
 
 - [代数的構造](./algebra/introduction.md)
   - [モノイド](./algebra/monoid.md)

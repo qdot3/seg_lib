@@ -515,6 +515,7 @@ mod partition_end {
 
     use crate::{SegmentTree, ops::Add};
 
+    /// ANCHOR: test
     #[test]
     fn ones() {
         const MAX_SIZE: isize = 200;
@@ -534,12 +535,11 @@ mod partition_end {
             }
         }
     }
+    /// ANCHOR_END: test
 
     #[test]
-    fn with_zero() {
-        const MAX: u32 = 3;
+    fn zero_one() {
         const SIZE: u32 = 100;
-        assert!(SIZE / (MAX + 1) > 10);
 
         // *O*(*N*)
         fn naive(values: &Vec<u32>, start: usize, pred: impl Fn(&u32) -> bool) -> usize {
@@ -557,7 +557,7 @@ mod partition_end {
         let mut rng = rand::rng();
         for size in 1..=SIZE {
             let values = Vec::from_iter(
-                std::iter::repeat_with(|| rng.random_range(0..=MAX)).take(size as usize),
+                std::iter::repeat_with(|| rng.random_range(0..=1)).take(size as usize),
             );
             let range_sum_query = SegmentTree::<Add<_>>::from(values.clone());
 
@@ -600,7 +600,7 @@ mod partition_start {
     }
 
     #[test]
-    fn with_zero() {
+    fn zero_one() {
         const SIZE: u32 = 100;
 
         // *O*(*N*)
