@@ -30,9 +30,9 @@
 
 区間幅を$N$とし、ある時点での更新クエリの数を$Q$とします。
 
-|                       | arena        | range query | point update |
-| --------------------- | ------------ | ----------- | ------------ |
-| time/space complexity | $\Theta (Q)$ | $O(\log N)$ | $O(\log N)$  |
+|                       | arena  | range query | point update |
+| --------------------- | ------ | ----------- | ------------ |
+| time/space complexity | $O(Q)$ | $O(\log N)$ | $O(\log N)$  |
 
 ## 実装例
 

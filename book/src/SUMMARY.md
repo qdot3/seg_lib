@@ -3,6 +3,10 @@
 - [セグメント木]()
   - [二分探索](./segment_tree/binary_serach.md)
 
+- [実装上の注意](./implementation/summary.md)
+  - [区間の取り扱い](./implementation/range.md)
+  - [サイズ](./implementation/size.md)
+
 - [代数的構造](./algebra/introduction.md)
   - [モノイド](./algebra/monoid.md)
   - [モノイド作用](./algebra/monoid_action.md)
