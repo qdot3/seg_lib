@@ -3,6 +3,8 @@ use std::{
     ops::{Range, RangeBounds},
 };
 
+use num_traits::WrappingShl;
+
 use crate::{traits::Monoid, utility::convert_range};
 
 /// A data structure that supports **range query point update** operations.
@@ -26,8 +28,6 @@ where
 
     /// `len` (number of elements) and offset (dummy + cache)
     len_or_offset: usize,
-    // /// This and its ancestors are all invalid (cached result may be broken)
-    // min_invalid_node: usize,
 }
 // ANCHOR_END: definition
 
@@ -278,11 +278,11 @@ where
     where
         P: Fn(&<Query as Monoid>::Set) -> bool,
     {
-        assert!(start < self.len_or_offset);
+        assert!(start <= self.len_or_offset);
 
         let mut i = self.inner_index(start);
-        let mut segment_size = 1 << i.trailing_zeros();
-        i >>= i.trailing_zeros();
+        let mut segment_size = 1.wrapping_shl(i.trailing_zeros());
+        i = i.wrapping_shr(i.trailing_zeros());
         let mut combined = <Query as Monoid>::identity();
 
         let mut tmp;
@@ -325,6 +325,79 @@ where
         } {}
 
         start
+    }
+
+    /// Returns the largest index `start` such that:
+    ///
+    /// ```text
+    /// pred(self.range_query(i..end)) == true   for ∀ i ∈ [start, end]
+    /// pred(self.range_query(i..end)) == false  for ∀ i ∈ [0, start - 1]
+    /// ```
+    ///
+    /// This is analogous to [`slice::partition_point`], but applied to
+    /// range queries on a segment tree.
+    ///
+    /// # Constraints
+    ///
+    /// - `pred` must return `true` for the identity element.
+    /// - Once `pred` returns `false` for some `i`, it must return `false`
+    ///   for all larger `i`, that is the results must be partitioned.
+    ///
+    /// # Time complexity
+    ///
+    /// *O*(log *N*)
+    pub fn partition_start<P>(&self, mut end: usize, pred: P) -> usize
+    where
+        P: Fn(&<Query as Monoid>::Set) -> bool,
+    {
+        assert!(end <= self.len_or_offset);
+
+        let mut i = self.inner_index(end);
+        let mut segment_size = 1.wrapping_shl(i.trailing_zeros());
+        i = i.wrapping_shr(i.trailing_zeros());
+        let mut combined = <Query as Monoid>::identity();
+
+        let mut tmp;
+        while end >= segment_size && {
+            // i > 0 && i % 2 == 1
+            tmp = <Query as Monoid>::combine(&combined, &self.data[i - 1]);
+            pred(&tmp)
+        } {
+            combined = tmp;
+            end -= segment_size;
+            i -= 1;
+
+            segment_size <<= i.trailing_zeros();
+            i >>= i.trailing_zeros();
+        }
+
+        if end == 0 {
+            return 0;
+        }
+
+        (i, segment_size) = {
+            i = self.inner_index(end);
+            let shift = end.ilog2().min(i.trailing_zeros());
+            (i >> shift, 1 << shift)
+        };
+        while {
+            tmp = <Query as Monoid>::combine(&combined, &self.data[i - 1]);
+
+            // branchless if block
+            {
+                let is_ok = pred(&tmp) && end >= segment_size;
+                combined = if is_ok { tmp } else { combined };
+                i -= if is_ok { 1 } else { 0 };
+                end -= if is_ok { segment_size } else { 0 };
+            }
+
+            i <<= 1;
+            segment_size >>= 1;
+
+            i <= self.len_or_offset * 2
+        } {}
+
+        end
     }
 }
 
@@ -450,7 +523,7 @@ mod partition_end {
         for size in 0..MAX_SIZE {
             let range_sum_query =
                 SegmentTree::<Add<isize>>::from_iter(std::iter::repeat_n(1, size as usize));
-            for start in 0..size {
+            for start in 0..=size {
                 for sum in -OFFSET..=size as isize + OFFSET {
                     assert_eq!(
                         range_sum_query.partition_end(start as usize, |&v| v <= sum),
@@ -488,11 +561,75 @@ mod partition_end {
             );
             let range_sum_query = SegmentTree::<Add<_>>::from(values.clone());
 
-            for start in 0..size as usize {
+            for start in 0..=size as usize {
                 for sum in 0..size {
                     assert_eq!(
                         range_sum_query.partition_end(start, |v| *v < sum),
                         naive(&values, start, |v| *v < sum)
+                    )
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod partition_start {
+    use rand::Rng;
+
+    use crate::{SegmentTree, ops::Add};
+
+    #[test]
+    fn ones() {
+        const MAX_SIZE: isize = 200;
+        const OFFSET: isize = 10;
+
+        for size in 0..MAX_SIZE {
+            let range_sum_query =
+                SegmentTree::<Add<isize>>::from_iter(std::iter::repeat_n(1, size as usize));
+            for end in 0..=size {
+                for sum in -OFFSET..=size as isize + OFFSET {
+                    assert_eq!(
+                        range_sum_query.partition_start(end as usize, |&v| v <= sum),
+                        (end - sum).clamp(0, end) as usize,
+                        "size: {size}, end: {end}, sum: {sum}"
+                    )
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn with_zero() {
+        const SIZE: u32 = 100;
+
+        // *O*(*N*)
+        fn naive(values: &Vec<u32>, end: usize, pred: impl Fn(&u32) -> bool) -> usize {
+            let additional = values[..end]
+                .iter()
+                .rev()
+                .scan(0, |acc, v| {
+                    *acc += v;
+                    Some(*acc)
+                })
+                .take_while(|v| pred(v))
+                .count();
+            end - additional
+        }
+
+        let mut rng = rand::rng();
+        for size in 1..=SIZE {
+            let values = Vec::from_iter(
+                std::iter::repeat_with(|| rng.random_range(0..=1)).take(size as usize),
+            );
+            let range_sum_query = SegmentTree::<Add<_>>::from(values.clone());
+
+            for end in 0..=size as usize {
+                for sum in 0..size {
+                    assert_eq!(
+                        range_sum_query.partition_start(end, |v| *v <= sum),
+                        naive(&values, end, |v| *v <= sum),
+                        "size: {size}, end: {end}, sum: {sum}, vex: {values:?}"
                     )
                 }
             }
