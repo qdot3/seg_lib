@@ -3,6 +3,11 @@ use std::{
     ops::{Range, RangeBounds},
 };
 
+/// Convert [`RangeBounds`] trait objects into [`Range`].
+///
+/// # Panics
+///
+/// Panics if the given range is out of bounds or if any of inclusive bounds is `usize::MAX`.
 #[inline(always)]
 pub(crate) fn convert_range<R>(given: R, outer: Range<usize>) -> Range<usize>
 where
@@ -10,12 +15,16 @@ where
 {
     let start = match given.start_bound() {
         std::ops::Bound::Included(start) => *start,
-        std::ops::Bound::Excluded(start) => start.checked_add(1).unwrap(),
+        std::ops::Bound::Excluded(start) => start
+            .checked_add(1)
+            .expect("starting point of the given range is less than `usize::MAX`"),
         std::ops::Bound::Unbounded => outer.start,
     };
     let end = match given.end_bound() {
         std::ops::Bound::Excluded(end) => *end,
-        std::ops::Bound::Included(end) => end.checked_add(1).unwrap(),
+        std::ops::Bound::Included(end) => end
+            .checked_add(1)
+            .expect("end point of the given range is less than `usize::MAX`"),
         std::ops::Bound::Unbounded => outer.end,
     };
 
@@ -61,7 +70,7 @@ mod test_convert_range {
 /// # Panics
 ///
 /// Panics if `0` is passed.
-#[allow(dead_code)]
+#[deprecated = "useless"]
 pub(crate) const fn min_invalid_index(len_plus_offset: usize) -> usize {
     let bottom_len = len_plus_offset - (len_plus_offset.next_power_of_two() >> 1);
     let valid_parent_num = bottom_len.trailing_zeros();

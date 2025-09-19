@@ -123,7 +123,7 @@ where
 
     #[doc = include_str!("../doc/point_update.md")]
     ///
-    ///  # Time complexity
+    /// # Time complexity
     ///
     /// *O*(log *N*)
     ///
@@ -304,20 +304,17 @@ where
         i >>= i.trailing_zeros();
         let mut combined = <Query as Monoid>::identity();
 
-        while start + segment_size < self.len_or_offset {
-            let tmp = <Query as Monoid>::combine(&combined, &self.data[i]);
+        let mut tmp;
+        while start + segment_size <= self.len_or_offset && {
+            tmp = <Query as Monoid>::combine(&combined, &self.data[i]);
+            pred(&tmp)
+        } {
+            combined = tmp;
+            start += segment_size;
+            i += 1;
 
-            if pred(&tmp) {
-                combined = tmp;
-
-                start += segment_size;
-
-                i += 1;
-                segment_size <<= i.trailing_zeros();
-                i >>= i.trailing_zeros();
-            } else {
-                break;
-            }
+            segment_size <<= i.trailing_zeros();
+            i >>= i.trailing_zeros();
         }
 
         if start == self.len_or_offset {
@@ -330,13 +327,14 @@ where
             (i >> shift, 1 << shift)
         };
         while {
-            let tmp = <Query as Monoid>::combine(&combined, &self.data[i]);
+            tmp = <Query as Monoid>::combine(&combined, &self.data[i]);
 
-            if pred(&tmp) {
-                combined = tmp;
-
-                i += 1;
-                start += segment_size;
+            // branchless if block
+            {
+                let is_ok = pred(&tmp) && start + segment_size <= self.len_or_offset;
+                combined = if is_ok { tmp } else { combined };
+                i += if is_ok { 1 } else { 0 };
+                start += if is_ok { segment_size } else { 0 };
             }
 
             i <<= 1;
@@ -345,7 +343,7 @@ where
             i < self.len_or_offset * 2
         } {}
 
-        start.min(self.len_or_offset)
+        start
     }
 }
 
@@ -458,31 +456,13 @@ mod range_query {
 }
 
 #[cfg(test)]
-mod partition_point {
-    use std::ops::Range;
-
+mod partition_end {
     use rand::Rng;
 
     use crate::{SegmentTree, ops::Add};
 
-    /// *O*(*N*)
-    fn naive_partition_end<P>(src: &[u32], start: usize, pred: P) -> usize
-    where
-        P: Fn(u32) -> bool,
-    {
-        let mut acc = 0;
-        start
-            + src[start..]
-                .iter()
-                .take_while(|&&v| {
-                    acc += v;
-                    pred(acc)
-                })
-                .count()
-    }
-
     #[test]
-    fn partition_end_ones() {
+    fn ones() {
         const MAX_SIZE: isize = 200;
         const OFFSET: isize = 10;
 
@@ -502,23 +482,39 @@ mod partition_point {
     }
 
     #[test]
-    fn partition_end() {
-        const SIZE: usize = 1_000;
-        const RANGE: Range<u32> = 0..u32::MAX / SIZE as u32; // avoid overflow for range sum query
+    fn with_zero() {
+        const MAX: u32 = 3;
+        const SIZE: u32 = 100;
+        assert!(SIZE / (MAX + 1) > 10);
+
+        // *O*(*N*)
+        fn naive(values: &Vec<u32>, start: usize, pred: impl Fn(&u32) -> bool) -> usize {
+            let additional = values[start..]
+                .iter()
+                .scan(0, |acc, v| {
+                    *acc += v;
+                    Some(*acc)
+                })
+                .take_while(|v| pred(v))
+                .count();
+            start + additional
+        }
 
         let mut rng = rand::rng();
+        for size in 1..=SIZE {
+            let values = Vec::from_iter(
+                std::iter::repeat_with(|| rng.random_range(0..=MAX)).take(size as usize),
+            );
+            let range_sum_query = SegmentTree::<Add<_>>::from(values.clone());
 
-        let src = Vec::from_iter(std::iter::repeat_with(|| rng.random_range(RANGE)).take(SIZE));
-        let range_sum_query = SegmentTree::<Add<_>>::from(src.clone());
-
-        // for _ in 0..ITER_COUNT {
-        let start = rng.random_range(0..SIZE);
-        let sum = rng.random();
-        println!("{start} {sum}");
-        assert_eq!(
-            range_sum_query.partition_end(start, |v| *v < sum),
-            naive_partition_end(&src, start, |v| v < sum)
-        );
-        // }
+            for start in 0..size as usize {
+                for sum in 0..size {
+                    assert_eq!(
+                        range_sum_query.partition_end(start, |v| *v < sum),
+                        naive(&values, start, |v| *v < sum)
+                    )
+                }
+            }
+        }
     }
 }
