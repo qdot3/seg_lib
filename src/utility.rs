@@ -7,7 +7,8 @@ use std::{
 ///
 /// # Panics
 ///
-/// Panics if the given range is out of bounds or ...
+/// Panics if the given range is out of bounds or
+/// if exclusive starting point or inclusive end point is `usize::MAX`.
 #[inline(always)]
 pub(crate) fn convert_range<R>(given: R, outer: Range<usize>) -> Range<usize>
 where
