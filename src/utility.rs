@@ -3,7 +3,7 @@ use std::{
     ops::{Range, RangeBounds},
 };
 
-/// Convert [`RangeBounds`] trait objects into [`Range`].
+/// Convert [`RangeBounds`] trait objects into [`Range`] which can be empty.
 ///
 /// # Panics
 ///
@@ -18,17 +18,18 @@ where
         std::ops::Bound::Included(start) => *start,
         std::ops::Bound::Excluded(start) => start
             .checked_add(1)
-            .expect("starting point of the given range is less than `usize::MAX`"),
+            .expect("exclusive starting point of the given range should be less than `usize::MAX`"),
         std::ops::Bound::Unbounded => outer.start,
     };
     let end = match given.end_bound() {
         std::ops::Bound::Excluded(end) => *end,
         std::ops::Bound::Included(end) => end
             .checked_add(1)
-            .expect("end point of the given range is less than `usize::MAX`"),
+            .expect("inclusive end point of the given range should be less than `usize::MAX`"),
         std::ops::Bound::Unbounded => outer.end,
     };
 
+    // we can clamp the given range
     assert!(
         outer.start <= start && end <= outer.end,
         "the given range should be within {outer:?}, but is {given:?}",
@@ -72,7 +73,7 @@ mod test_convert_range {
 /// # Panics
 ///
 /// Panics if `0` is passed.
-#[deprecated = "useless"]
+#[allow(dead_code)]
 pub(crate) const fn min_invalid_index(len_plus_offset: usize) -> usize {
     let bottom_len = len_plus_offset - (len_plus_offset.next_power_of_two() >> 1);
     let valid_parent_num = bottom_len.trailing_zeros();

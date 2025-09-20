@@ -52,6 +52,19 @@ where
         Self::from_iter(std::iter::repeat_with(<Query as Monoid>::identity).take(n))
     }
 
+    /// Calculates all buffer segments in bottom-to-top order.
+    ///
+    /// # Time complexity
+    ///
+    /// *Θ*(*N*)
+    #[inline]
+    fn build(&mut self) -> &mut Self {
+        for i in (1..self.len_or_offset).rev() {
+            self.data[i] = <Query as Monoid>::combine(&self.data[i * 2], &self.data[i * 2 + 1])
+        }
+        self
+    }
+
     /// Returns the number of elements.
     ///
     /// # Time complexity
@@ -198,11 +211,15 @@ where
             return <Query as Monoid>::identity();
         }
 
-        let Range { start, end } = range;
-        let [l, r] = [self.inner_index(start), self.inner_index(end)];
-        let [mut l, mut r] = [l >> l.trailing_zeros(), r >> r.trailing_zeros()];
+        let [mut l, mut r] = {
+            // Consumes range and avoids copy
+            let Range { start, end } = range;
+            let [l, r] = [self.inner_index(start), self.inner_index(end)];
+            [l >> l.trailing_zeros(), r >> r.trailing_zeros()]
+        };
         let (mut acc_l, mut acc_r) = (<Query as Monoid>::identity(), <Query as Monoid>::identity());
         while {
+            // This is branchy but necessary for avoiding invalid buffers. ...really?
             if l >= r {
                 acc_l = <Query as Monoid>::combine(&acc_l, &self.data[l]);
                 l += 1;
@@ -235,6 +252,7 @@ where
     /// st.point_update(10, 6);
     /// assert_eq!(st.point_query(10), &6);
     /// ```
+    #[inline]
     pub const fn point_query(&self, i: usize) -> &<Query as Monoid>::Set {
         let i = self.inner_index(i);
         &self.data[i]
@@ -286,6 +304,7 @@ where
         let mut combined = <Query as Monoid>::identity();
 
         let mut tmp;
+        // The first condition ensures next segment is valid.
         while start + segment_size <= self.len_or_offset && {
             tmp = <Query as Monoid>::combine(&combined, &self.data[i]);
             pred(&tmp)
@@ -304,6 +323,7 @@ where
 
         (i, segment_size) = {
             i = self.inner_index(start);
+            // never panic since `self.len_or_offset - start > 0`.
             let shift = (self.len_or_offset - start).ilog2().min(i.trailing_zeros());
             (i >> shift, 1 << shift)
         };
@@ -312,7 +332,8 @@ where
 
             // branchless if block
             {
-                let is_ok = pred(&tmp) && start + segment_size <= self.len_or_offset;
+                // Checks whether the segment is valid.
+                let is_ok = start + segment_size <= self.len_or_offset && pred(&tmp);
                 combined = if is_ok { tmp } else { combined };
                 i += if is_ok { 1 } else { 0 };
                 start += if is_ok { segment_size } else { 0 };
@@ -350,6 +371,8 @@ where
     where
         P: Fn(&<Query as Monoid>::Set) -> bool,
     {
+        // See `partition_end()` for details.
+
         assert!(end <= self.len_or_offset);
 
         let mut i = self.inner_index(end);
@@ -407,21 +430,20 @@ where
 {
     fn from(values: Vec<<Query as Monoid>::Set>) -> Self {
         let n = values.len();
-        let mut data = Vec::from_iter(
+        let data = Vec::from_iter(
             std::iter::repeat_with(<Query as Monoid>::identity)
                 .take(n)
                 .chain(values),
         )
         .into_boxed_slice();
 
-        for i in (1..data.len() / 2).rev() {
-            data[i] = <Query as Monoid>::combine(&data[i * 2], &data[i * 2 + 1])
-        }
-
-        Self {
+        let mut tree = Self {
             data,
             len_or_offset: n,
-        }
+        };
+        tree.build();
+
+        tree
     }
 }
 
@@ -433,21 +455,20 @@ where
         let iter = iter.into_iter();
         let (min, max) = iter.size_hint();
         if Some(min) == max {
-            let mut data = Vec::from_iter(
+            let data = Vec::from_iter(
                 std::iter::repeat_with(<Query as Monoid>::identity)
                     .take(min)
                     .chain(iter),
             )
             .into_boxed_slice();
 
-            for i in (1..min).rev() {
-                data[i] = <Query as Monoid>::combine(&data[i * 2], &data[i * 2 + 1])
-            }
-
-            Self {
+            let mut tree = Self {
                 data,
                 len_or_offset: min,
-            }
+            };
+            tree.build();
+
+            tree
         } else {
             Self::from(Vec::from_iter(iter))
         }
@@ -555,14 +576,14 @@ mod partition_end {
         }
 
         let mut rng = rand::rng();
-        for size in 1..=SIZE {
+        for size in 0..=SIZE {
             let values = Vec::from_iter(
                 std::iter::repeat_with(|| rng.random_range(0..=1)).take(size as usize),
             );
             let range_sum_query = SegmentTree::<Add<_>>::from(values.clone());
 
             for start in 0..=size as usize {
-                for sum in 0..size {
+                for sum in 0..=size {
                     assert_eq!(
                         range_sum_query.partition_end(start, |v| *v < sum),
                         naive(&values, start, |v| *v < sum)
@@ -618,14 +639,14 @@ mod partition_start {
         }
 
         let mut rng = rand::rng();
-        for size in 1..=SIZE {
+        for size in 0..=SIZE {
             let values = Vec::from_iter(
                 std::iter::repeat_with(|| rng.random_range(0..=1)).take(size as usize),
             );
             let range_sum_query = SegmentTree::<Add<_>>::from(values.clone());
 
             for end in 0..=size as usize {
-                for sum in 0..size {
+                for sum in 0..=size {
                     assert_eq!(
                         range_sum_query.partition_start(end, |v| *v <= sum),
                         naive(&values, end, |v| *v <= sum),
@@ -636,3 +657,53 @@ mod partition_start {
         }
     }
 }
+
+// pub struct IterMut<'a, Query>
+// where
+//     Query: Monoid,
+// {
+//     buffer: &'a mut [<Query as Monoid>::Set],
+//     iter_mut: std::slice::IterMut<'a, <Query as Monoid>::Set>,
+// }
+
+// impl<'a, Query> IterMut<'a, Query>
+// where
+//     Query: Monoid,
+// {
+//     fn new(tree: &'a mut SegmentTree<Query>) -> Self {
+//         let (buffer, data) = tree.data.split_at_mut(tree.len_or_offset);
+//         Self {
+//             buffer,
+//             iter_mut: data.iter_mut(),
+//         }
+//     }
+// }
+
+// impl<'a, Query> Drop for IterMut<'a, Query>
+// where
+//     Query: Monoid,
+// {
+//     fn drop(&mut self) {
+//         todo!("recalculate buffer")
+//     }
+// }
+
+// impl<'a, Query> Deref for IterMut<'a, Query>
+// where
+//     Query: Monoid,
+// {
+//     type Target = std::slice::IterMut<'a, <Query as Monoid>::Set>;
+
+//     fn deref(&self) -> &Self::Target {
+//         &self.iter_mut
+//     }
+// }
+
+// impl<'a, Query> DerefMut for IterMut<'a, Query>
+// where
+//     Query: Monoid,
+// {
+//     fn deref_mut(&mut self) -> &mut Self::Target {
+//         &mut self.iter_mut
+//     }
+// }
