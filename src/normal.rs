@@ -367,6 +367,21 @@ where
     /// # Time complexity
     ///
     /// *O*(log *N*)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let st = seg_lib::SegmentTree::<seg_lib::ops::Add<i32>>::from(
+    ///     vec![1, 1, 1, 0, 0, 0, 0, 1, 1, 1]
+    /// );
+    ///
+    /// let end = 9;
+    /// let sum = 3;
+    /// let start = st.partition_start(end, |v| *v <= sum);
+    /// assert_eq!(start, 2);
+    /// assert!((start..end).all(|start| st.range_query(start..end) <= sum));
+    /// assert!((end + 1..10).all(|start| st.range_query(start..end) > sum));
+    /// ```
     pub fn partition_start<P>(&self, mut end: usize, pred: P) -> usize
     where
         P: Fn(&<Query as Monoid>::Set) -> bool,
